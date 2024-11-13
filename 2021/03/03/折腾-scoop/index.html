@@ -1,0 +1,731 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="peach-water">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="windows下好用的包管理器scoop一、scoop简介Scoop是Windows的命令行安装程序，是一个强大的包管理工具。可以在github上找到其项目的相关信息，项目网址。 安装的起因：在学习中如果要安装像gcc、git等一些需要手动配置相关参数的工具，需要先去官网下载安装程序，点击安装，之后还需要配置环境变量，不仅过程麻烦。而且工具多了之后整理起来也相当不容易，配置也很杂，整个电脑就像被污">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[折腾]scoop">
+<meta property="og:url" content="http://example.com/2021/03/03/%E6%8A%98%E8%85%BE-scoop/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="windows下好用的包管理器scoop一、scoop简介Scoop是Windows的命令行安装程序，是一个强大的包管理工具。可以在github上找到其项目的相关信息，项目网址。 安装的起因：在学习中如果要安装像gcc、git等一些需要手动配置相关参数的工具，需要先去官网下载安装程序，点击安装，之后还需要配置环境变量，不仅过程麻烦。而且工具多了之后整理起来也相当不容易，配置也很杂，整个电脑就像被污">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-03-03T11:44:40.000Z">
+<meta property="article:modified_time" content="2024-11-12T14:26:31.391Z">
+<meta property="article:author" content="peach-water">
+<meta property="article:tag" content="工具">
+<meta property="article:tag" content="折腾">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>[折腾]scoop - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="[折腾]scoop"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2021-03-03 19:44" pubdate>
+          March 3, 2021 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.2k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          11 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">[折腾]scoop</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="windows下好用的包管理器scoop"><a href="#windows下好用的包管理器scoop" class="headerlink" title="windows下好用的包管理器scoop"></a>windows下好用的包管理器scoop</h1><h2 id="一、scoop简介"><a href="#一、scoop简介" class="headerlink" title="一、scoop简介"></a>一、scoop简介</h2><p>Scoop是Windows的命令行安装程序，是一个强大的包管理工具。可以在github上找到其项目的相关信息，项目<a target="_blank" rel="noopener" href="https://github.com/lukesampson/scoop">网址</a>。</p>
+<p>安装的起因：在学习中如果要安装像gcc、git等一些需要手动配置相关参数的工具，需要先去官网下载安装程序，点击安装，之后还需要配置环境变量，不仅过程麻烦。而且工具多了之后整理起来也相当不容易，配置也很杂，整个电脑就像被污染了一样。不仅如此，在windows下配置一个能使用的GCC编译器和GDB调试器，能够不出各种奇奇怪怪的问题就已经是谢天谢地了。这时候就好羡慕隔壁的linux强大的apt包管理器，或者mac的homebrew。这时候scoop横空出世。安装scoop后，只需要在命令行输入简单的一串命令即可安装你想要的软件。比如我想安装gcc，只需要输入</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs powershell">scoop install gcc<br>scoop install gdb<br></code></pre></td></tr></table></figure>
+
+<p>就能够帮我完成从安装到环境变量全部过程。从此告别百度为什么gcc命令出错。</p>
+<h2 id="二、安装scoop"><a href="#二、安装scoop" class="headerlink" title="二、安装scoop"></a>二、安装scoop</h2><h3 id="1、要求"><a href="#1、要求" class="headerlink" title="1、要求"></a>1、要求</h3><ul>
+<li>Windows 7 SP1 + &#x2F; Windows Server 2008+</li>
+<li>Powershell 5 或者更高版本和.NET Framework 4.5或者更高版本</li>
+<li>必须启用PowerShell，例如Set-ExecutionPolicy RemoteSigned -Scope CurrentUser</li>
+<li>你能够正常（最好是快速）访问全球最大同性<a target="_blank" rel="noopener" href="https://github.com/">交友网站</a></li>
+</ul>
+<h3 id="2、安装"><a href="#2、安装" class="headerlink" title="2、安装"></a>2、安装</h3><p>首先打开使用<strong>管理员身份</strong>打开PowerShell，在里面输入这条命令启用脚本：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-built_in">set-executionpolicy</span> remotesigned <span class="hljs-literal">-scope</span> currentuser<br></code></pre></td></tr></table></figure>
+<p>| ⚠注意：如果C盘容量告急，先看第三小节如何迁移安装位置。<br>然后使用这条命令一键安装：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-built_in">iex</span> (<span class="hljs-built_in">new-object</span> net.webclient).downloadstring(<span class="hljs-string">&#x27;https://get.scoop.sh&#x27;</span>)<br>或者<br><span class="hljs-built_in">iwr</span> <span class="hljs-literal">-useb</span> get.scoop.sh | <span class="hljs-built_in">iex</span><br></code></pre></td></tr></table></figure>
+<p>等命令执行结束后，输入以下指令测试能否正常使用<code>scoop</code>命令。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs powershell">scoop <span class="hljs-literal">-h</span><br></code></pre></td></tr></table></figure>
+
+<p>如果出现了</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-built_in">PS</span> D:\hexo&gt; scoop <span class="hljs-literal">-h</span><br>Usage: scoop &lt;command&gt; [&lt;<span class="hljs-type">args</span>&gt;]<br><br>Available commands are listed below.<br><br><span class="hljs-built_in">Type</span> <span class="hljs-string">&#x27;scoop help &lt;command&gt;&#x27;</span> to get more help <span class="hljs-keyword">for</span> a specific command.<br><br>Command    Summary<br><span class="hljs-literal">-------</span>    <span class="hljs-literal">-------</span><br>alias      Manage scoop aliases<br>bucket     Manage Scoop buckets<br>cache      Show or <span class="hljs-built_in">clear</span> the download cache<br><span class="hljs-built_in">cat</span>        Show content of specified manifest.<br>checkup    Check <span class="hljs-keyword">for</span> potential problems<br>cleanup    Cleanup apps by removing old versions<br>config     Get or <span class="hljs-built_in">set</span> configuration values<br>create     Create a custom app manifest<br>depends    List dependencies <span class="hljs-keyword">for</span> an app, <span class="hljs-keyword">in</span> the order they will be installed<br>download   Download apps <span class="hljs-keyword">in</span> the cache folder and verify hashes<br>export     Exports installed apps, buckets (and optionally configs) <span class="hljs-keyword">in</span> JSON format<br>help       Show help <span class="hljs-keyword">for</span> a command<br>hold       Hold an app to disable updates<br>home       Opens the app homepage<br>import     Imports apps, buckets and configs from a Scoopfile <span class="hljs-keyword">in</span> JSON format<br>info       Display information about an app<br>install    Install apps<br>list       List installed apps<br>prefix     Returns the path to the specified app<br>reset      Reset an app to resolve conflicts<br>search     Search available apps<br>shim       Manipulate Scoop shims<br>status     Show status and check <span class="hljs-keyword">for</span> new app versions<br>unhold     Unhold an app to enable updates<br>uninstall  Uninstall an app<br>update     Update apps, or Scoop itself<br>virustotal Look <span class="hljs-keyword">for</span> app`s hash or url on virustotal.com<br>which      Locate a shim/executable (similar to <span class="hljs-string">&#x27;which&#x27;</span> on Linux)<br></code></pre></td></tr></table></figure>
+<p>那么恭喜安装完成。安装到此结束。顺带一提，这个软件是默认安装到“C:\User\用户名\scoop\”底下的。而且在此下载安装的所有软件都会在这个目录的“\app\”底下。如果C盘空间多，那么安装结束。如果C盘空间不够，我们就还需要修改<code>scoop</code>默认安装位置。</p>
+<h3 id="3、更改默认安装位置"><a href="#3、更改默认安装位置" class="headerlink" title="3、更改默认安装位置"></a>3、更改默认安装位置</h3><p>将scoop安装到自定义目录。需要在执行<code>scoop</code>的安装脚本之前执行。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-variable">$env:SCOOP</span>=<span class="hljs-string">&#x27;D:\Applications\Scoop&#x27;</span>   \\你的目录<br>[<span class="hljs-type">Environment</span>]::SetEnvironmentVariable(<span class="hljs-string">&#x27;SCOOP&#x27;</span>, <span class="hljs-variable">$env:SCOOP</span>, <span class="hljs-string">&#x27;User&#x27;</span>)<br></code></pre></td></tr></table></figure>
+<p><code>scoop</code>安装软件的位置更改。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-variable">$env:SCOOP_GLOBAL</span>=<span class="hljs-string">&#x27;F:\GlobalScoopApps&#x27;</span> \\ 指定目录<br>[<span class="hljs-type">Environment</span>]::SetEnvironmentVariable(<span class="hljs-string">&#x27;SCOOP_GLOBAL&#x27;</span>, <span class="hljs-variable">$env:SCOOP_GLOBAL</span>, <span class="hljs-string">&#x27;Machine&#x27;</span>)<br></code></pre></td></tr></table></figure>
+
+<h2 id="三、使用方法"><a href="#三、使用方法" class="headerlink" title="三、使用方法"></a>三、使用方法</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>search</td>
+<td>搜索软件</td>
+</tr>
+<tr>
+<td>install</td>
+<td>安装软件</td>
+</tr>
+<tr>
+<td>update</td>
+<td>更新软件和更新软件源</td>
+</tr>
+<tr>
+<td>status</td>
+<td>查看软件状态，是否有更新</td>
+</tr>
+<tr>
+<td>uninstall</td>
+<td>卸载软件</td>
+</tr>
+<tr>
+<td>info</td>
+<td>查看软件信息</td>
+</tr>
+<tr>
+<td>home</td>
+<td>查看软件主页</td>
+</tr>
+<tr>
+<td>list</td>
+<td>查看已安装的软件</td>
+</tr>
+<tr>
+<td>cache</td>
+<td>查看安装、更新时的缓存</td>
+</tr>
+<tr>
+<td>virustotal</td>
+<td>在virustotal.org上查看软件的哈希值</td>
+</tr>
+</tbody></table>
+<h2 id="四、额外安排"><a href="#四、额外安排" class="headerlink" title="四、额外安排"></a>四、额外安排</h2><h3 id="1、使用国内源"><a href="#1、使用国内源" class="headerlink" title="1、使用国内源"></a>1、使用国内源</h3><figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-built_in">iwr</span> <span class="hljs-literal">-useb</span> https://gitee.com/glsnames/scoop<span class="hljs-literal">-installer</span>/raw/master/bin/install.ps1 | <span class="hljs-built_in">iex</span><br>scoop config SCOOP_REPO <span class="hljs-string">&#x27;https://gitee.com/glsnames/scoop-installer&#x27;</span><br>scoop update<br></code></pre></td></tr></table></figure>
+
+<h3 id="2、添加其他软件库"><a href="#2、添加其他软件库" class="headerlink" title="2、添加其他软件库"></a>2、添加其他软件库</h3><p><code>scoop</code>自带软件库不包含大部分软件，所以需要添加其他软件库。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs powershell">scoop bucket add extras<br><span class="hljs-comment"># 如上添加的是官方维护的 extras 软件库</span><br>scoop update<br></code></pre></td></tr></table></figure>
+<p>还有以下的软件库</p>
+<ul>
+<li>main</li>
+<li>versions</li>
+<li>java</li>
+<li>dorado</li>
+</ul>
+<h2 id="五、为什么要强推包管理器"><a href="#五、为什么要强推包管理器" class="headerlink" title="五、为什么要强推包管理器"></a>五、为什么要强推包管理器</h2><p>作为一个包管理器，最基础，也是最重要的功能就是安装软件。正在使用 Windows 的你一定在想：「为什么我要用它？为什么我不直接百度一下？」<br>当然可以。</p>
+<ol>
+<li>百度一下这个软件</li>
+<li>然后在一堆奇奇怪怪的下载链接中徘徊</li>
+<li>看到一个看上去最无毒，最没有捆绑的安装包</li>
+<li>小心翼翼的避开流氓特性</li>
+<li>选择一个合适的安装位置，防止到处拉屎</li>
+</ol>
+<p>好麻烦的安装！！！</p>
+<p>Scoop 等一系列包管理器的诞生，第一大便利就是省去了上述繁琐的「搜索 - 下载 - 安装」的步骤，让我们能够通过「一行代码」急速安装。💪</p>
+<p>同时，用Scoop来安装和管理我们的软件：</p>
+<ul>
+<li>集搜索、下载、安装、更新于一体；极大的降低了安装维护一个软件的成本，我们甚至不需要在软件复杂的菜单中找到更新按钮，也不会有烦人的弹窗提醒你更新。</li>
+<li>将软件干干净净的安装到电脑的{用户文件夹}下：污染路径。</li>
+<li>卸载软件也能够清空软件任何数据。</li>
+<li>有一些必要但是安装不容易的软件例如<code>gdb</code>也能够一键解决。</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%B7%A5%E5%85%B7/" class="print-no-link">#工具</a>
+      
+        <a href="/tags/%E6%8A%98%E8%85%BE/" class="print-no-link">#折腾</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>[折腾]scoop</div>
+      <div>http://example.com/2021/03/03/折腾-scoop/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>peach-water</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>March 3, 2021</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/03/22/%E5%AD%A6%E4%B9%A0-socket/" title="[学习]Socket套接字学习">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[学习]Socket套接字学习</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2020/12/07/%E5%AD%A6%E4%B9%A0-dijkstra/" title="[学习]广州地铁线路规划大作业">
+                        <span class="hidden-mobile">[学习]广州地铁线路规划大作业</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

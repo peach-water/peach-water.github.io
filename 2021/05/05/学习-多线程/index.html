@@ -1,0 +1,677 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="peach-water">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="N体问题模拟一个太空中有N个星体，各个星体有三个维度的速度和位置，相互之间受到万有引力影响运动的效果。模拟最小时间分位点为0.005秒，本题目中万有引力常数设定为1，星体的初始数据在“nbody.txt”文本文件中。要求用单线程和多线程分别完成一份，将迭代20次后的数据输出到文件中，并且比较串行程序和多线程之间的计算结果差异。 一、实现方案模拟方案涉及大量计算，对于算法的考察较小，考研对数据结构和">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[学习]多线程">
+<meta property="og:url" content="http://example.com/2021/05/05/%E5%AD%A6%E4%B9%A0-%E5%A4%9A%E7%BA%BF%E7%A8%8B/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="N体问题模拟一个太空中有N个星体，各个星体有三个维度的速度和位置，相互之间受到万有引力影响运动的效果。模拟最小时间分位点为0.005秒，本题目中万有引力常数设定为1，星体的初始数据在“nbody.txt”文本文件中。要求用单线程和多线程分别完成一份，将迭代20次后的数据输出到文件中，并且比较串行程序和多线程之间的计算结果差异。 一、实现方案模拟方案涉及大量计算，对于算法的考察较小，考研对数据结构和">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-05-05T13:18:06.000Z">
+<meta property="article:modified_time" content="2024-11-12T14:26:13.003Z">
+<meta property="article:author" content="peach-water">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="并行计算">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>[学习]多线程 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="[学习]多线程"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2021-05-05 21:18" pubdate>
+          May 5, 2021 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.1k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          18 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">[学习]多线程</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="N体问题"><a href="#N体问题" class="headerlink" title="N体问题"></a>N体问题</h1><p>模拟一个太空中有N个星体，各个星体有三个维度的速度和位置，相互之间受到万有引力影响运动的效果。模拟最小时间分位点为0.005秒，本题目中万有引力常数设定为1，星体的初始数据在“nbody.txt”文本文件中。要求用单线程和多线程分别完成一份，将迭代20次后的数据输出到文件中，并且比较串行程序和多线程之间的计算结果差异。</p>
+<h1 id="一、实现方案"><a href="#一、实现方案" class="headerlink" title="一、实现方案"></a>一、实现方案</h1><p>模拟方案涉及大量计算，对于算法的考察较小，考研对数据结构和计算方式设计，以及对与多线程openmp和pthread库的运用。</p>
+<ul>
+<li>实验环境：ubuntu20.04（Hype-V）</li>
+<li>编译器版本：g++ 9.3.0</li>
+</ul>
+<h2 id="1、输入数据"><a href="#1、输入数据" class="headerlink" title="1、输入数据"></a>1、输入数据</h2><p>一个txt文件，其中包括1024个星体的7项数据，一行为一个星体，分别是星体质量，星体在x、y、z上的位置，星体在x、y、z上的速度。</p>
+<p>对于一个星体需要存放的数据如下，主要是x、y、z空间位置，sx、sy、sz速度和mass星体质量，还有计算时一些临时变量，如计算1号星体和其他星体相互作用力总和的变量，引入这个变量还有一个作用，可以减少误差（主要是指除法的误差累积）。星体结构体数据如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">planet</span> <span class="hljs-comment">// 星体结构体</span><br>&#123;<br>	<span class="hljs-type">double</span> mass;	<span class="hljs-comment">// body质量</span><br>	<span class="hljs-type">double</span> sx, sy, sz;	<span class="hljs-comment">// body三维方向上的速度</span><br>	<span class="hljs-type">double</span> x, y, z;		<span class="hljs-comment">// body三维方向上的位置</span><br>	<span class="hljs-type">double</span> fx, fy, fz;	<span class="hljs-comment">// body三维方向上收到的力的总和</span><br>	<span class="hljs-built_in">planet</span>()			<span class="hljs-comment">// 把所有数据初始化为0</span><br>	&#123;<br>		mass = sx = sy = sz = x = y = z = <span class="hljs-number">0</span>;<br>		fx = fy = fz = <span class="hljs-number">0</span>;<br>	&#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="2、计算引力（单线程）"><a href="#2、计算引力（单线程）" class="headerlink" title="2、计算引力（单线程）"></a>2、计算引力（单线程）</h2><p>计算一个星体收到其他星体力的总和，无非两两之间计算力然后更新。<br>例如1号星体和2号星体、1号和3号、1号和4号……1号和1024号，2号和3号、2号和4号……等等（注意，这里并不需要求2号和1号，因为在计算1号和2号时已经计算了力大小，只需要取反）。因为这个模块也会在后来的多线程中被调用，因此抽象成为一个单独的函数。为了减小误差，将每次计算的力存放到临时变量中，并且在更新完所有的合力之后，再更新星体的速度和位置。<br>不要一上来就写并行化，拿单线程的程序验证算法的正确性是一个好习惯。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">speed_change</span><span class="hljs-params">(planet &amp;a, planet &amp;b)</span></span>&#123;...&#125;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">series_stimulus</span><span class="hljs-params">(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> count, planet *array)</span>				<span class="hljs-comment">// 单线程模块，count表示迭代多少次，array是计算使用的元数据。</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-keyword">while</span> (count--)<br>	&#123;<br>		<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; max_size; i++)<br>		&#123;<br>			<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j = i + <span class="hljs-number">1</span>; j &lt; max_size; j++)<br>			&#123;<br>				<span class="hljs-built_in">speed_change</span>(array[i], array[j]);<br>			&#125;<br>		&#125;<br>		<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; max_size; i++)<br>		&#123;<br>			<span class="hljs-built_in">postion</span>(array[i]);<br>		&#125;<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="3、多线程优化"><a href="#3、多线程优化" class="headerlink" title="3、多线程优化"></a>3、多线程优化</h2><h3 id="a、openmp多线程"><a href="#a、openmp多线程" class="headerlink" title="a、openmp多线程"></a>a、openmp多线程</h3><p>有了上面单线程的计算方法，多线程就是把单线程的for，while等循环体并行化而已，openmp！！！简直没有比这个更加快捷的方法。逐个讲解pragma omp parallel带的参数。</p>
+<ul>
+<li>for : 表明并行化循环</li>
+<li>num_threads(n) : 并行线程数量，n可以是任意整数，其实还是看配置</li>
+<li>private(a,b,…,z) : 表明哪些变量是私有变量，不同线程之间不会相互干扰</li>
+<li>shared(a,b,…,z) : 表明哪些变量是公有变量，不同线程之间共享，例如本题中星体数据就是共享的，并且能够更新</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">parallel_stimulus1</span><span class="hljs-params">(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> count, planet *array)</span>	<span class="hljs-comment">// openmp骞惰绋嬪簭</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-type">int</span> i, j;<br>	<span class="hljs-keyword">while</span> (count--)<br>	&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> omp parallel for num_threads(4) private(i, j) shared(array)</span><br>		<span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; max_size; i++)<br>		&#123;<br>			<span class="hljs-keyword">for</span> (j = i + <span class="hljs-number">1</span>; j &lt; max_size; j++)<br>			&#123;<br>				<span class="hljs-built_in">speed_change</span>(array[i], array[j]);<br>			&#125;<br>		&#125;<br>		<span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; max_size; i++)<br>		&#123;<br>			<span class="hljs-built_in">postion</span>(array[i]);<br>		&#125;<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>当然编译带有openmp的cpp文件需要在编译指令加入 -fopenmp 的参数，比如说你的文件叫做“a.cpp”那么编译参数就是：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs powershell">g++ a.cpp <span class="hljs-literal">-o</span> a.out <span class="hljs-literal">-fopenmp</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="b、pthread多线程"><a href="#b、pthread多线程" class="headerlink" title="b、pthread多线程"></a>b、pthread多线程</h3><p>如果说上面的openmp是自动多线程，那么pthread就是手动多线程。使用pthread创建新线程之前必须要为新线程分配空间，thread_handle就是这样一个容纳新线程的容器，然后使用new为它分配空间（这里因为笔者笔记本只有4个核心，因此只创建4线程）。有了容器之后要装东西，不然一个空的线程容器有什么用呢。调用pthread_create函数创建新线程：</p>
+<ul>
+<li>第一个参数是容器位置（也就是我们希望把这个新线程放在容器哪个位置）</li>
+<li>第二个参数在这里没有用指定为NULL</li>
+<li>第三个参数是函数指针（即希望在这个容器内运行什么），必须是void*类型</li>
+<li>第四个参数是给函数使用的参数（这个容器内的函数总不可能完成无米之炊吧，所以米在哪里在这个位置告诉它）</li>
+</ul>
+<p>pthread不会帮我们实现线程同步，所以需要手动实现线程同步。这里使用pthread_join函数，将之前创建的多个线程合并，统一更新星体的速度和位置。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">parallel_stimulus2</span><span class="hljs-params">(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> count, planet *array)</span>		<span class="hljs-comment">// pthread主线程函数</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-type">int</span> num_of_thread = <span class="hljs-number">4</span>;<br>	thread_set *set = <span class="hljs-keyword">new</span> thread_set[num_of_thread];<br>	<span class="hljs-type">pthread_t</span> *thread_handle = <span class="hljs-keyword">new</span> <span class="hljs-type">pthread_t</span>[num_of_thread];<br>	<span class="hljs-keyword">while</span> (count--)<br>	&#123;<br>		<span class="hljs-keyword">for</span> (<span class="hljs-type">long</span> i = <span class="hljs-number">0</span>; i &lt; num_of_thread; i++)<br>		&#123;<br>			set[i].rank = i;<br>			set[i].o = array;<br>			<span class="hljs-built_in">pthread_create</span>(&amp;thread_handle[i], <span class="hljs-literal">nullptr</span>, thread_pthread, (<span class="hljs-type">void</span> *)&amp;set[i]);<br>		&#125;<br>		<span class="hljs-keyword">for</span> (<span class="hljs-type">long</span> i = num_of_thread<span class="hljs-number">-1</span>; i &gt;= <span class="hljs-number">0</span>; i--)<br>		&#123;<br>			<span class="hljs-built_in">pthread_join</span>(thread_handle[i], <span class="hljs-literal">nullptr</span>);<br>		&#125;<br>		<br>		<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; max_size; i++)<br>		&#123;<br>			<span class="hljs-built_in">postion</span>(array[i]);<br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">delete</span>[] thread_handle;<br>	<span class="hljs-keyword">delete</span>[] set;<br>	<span class="hljs-keyword">return</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>然后是容器内容物要怎么办，因为要手动并行化，所以这个线程做什么也需要自己计算。本处举个🌰是4线程，每个线程计算1024个星体的四分之一。为了传递参数方便，使用结构体thread_set，其一是方便、其二是因为pthread_create第四个参数是一个指针（而不是一个指针的指针），不能传递多个参数。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">thread_set</span> <span class="hljs-comment">// pthread参数表</span><br>&#123;<br>	<span class="hljs-type">int</span> rank;		<span class="hljs-comment">// 指定的线程号</span><br>	planet *o;		<span class="hljs-comment">// 计算的元数据</span><br>&#125;;<br><span class="hljs-function"><span class="hljs-type">void</span> *<span class="hljs-title">thread_pthread</span><span class="hljs-params">(<span class="hljs-type">void</span> *argv)</span>							<span class="hljs-comment">// pthread子线程函数</span></span><br><span class="hljs-function"></span>&#123;<br>	thread_set set = *(thread_set *)argv;<br>	<span class="hljs-type">long</span> rank = set.rank;<br>	<span class="hljs-type">int</span> n = <span class="hljs-number">0</span>;<br>	<br>	<span class="hljs-keyword">if</span> (rank == <span class="hljs-number">3</span>)<br>	&#123;<br>		n = max_size - <span class="hljs-number">1</span>;<br>	&#125;<br>	<span class="hljs-keyword">else</span><br>	&#123;<br>		n = (rank + <span class="hljs-number">1</span>) * max_size / <span class="hljs-number">4</span>;				<span class="hljs-comment">// 如果修改线程数，这里一并修改。</span><br>	&#125;<br>	<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = rank * max_size / <span class="hljs-number">4</span>; i &lt; n; i++)<br>	&#123;<br>		<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j = i + <span class="hljs-number">1</span>; j &lt;= max_size; j++)<br>		&#123;<br>			<span class="hljs-built_in">speed_change</span>(set.o[i], set.o[j]);<br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">nullptr</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>为了能够使用pthread，需要在编译参数上增加“-lpthread”是“l”不是“i”。🌰同上。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs powershell">g++ a.cpp <span class="hljs-literal">-o</span> a.out <span class="hljs-literal">-lpthread</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="4、输入输出"><a href="#4、输入输出" class="headerlink" title="4、输入输出"></a>4、输入输出</h2><p>需要从文件中读入计算数据，然后将迭代结果输出到文件。此处比较推荐的是ofstream头文件提供的文件流功能。能够像cout、cin一样使用。</p>
+<h3 id="a、文件读入"><a href="#a、文件读入" class="headerlink" title="a、文件读入"></a>a、文件读入</h3><p>使用前建立一个fstream文件流指针，调用open方法打开需要读入的文件。然后像使用cin一样使用fp即可。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fstream&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">read</span><span class="hljs-params">(planet *array)</span>				</span><br><span class="hljs-function"></span>&#123;<br>	fstream fp;<br>	fp.<span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;nbody.txt&quot;</span>, ios::in);<br>	<span class="hljs-keyword">if</span> (fp.<span class="hljs-built_in">bad</span>())					<span class="hljs-comment">// 检查文件是否存在</span><br>	&#123;<br>		cout &lt;&lt; <span class="hljs-string">&quot;error to open file&quot;</span>;<br>	&#125;<br>	<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; max_size; i++)<br>	&#123;<br>		fp &gt;&gt; array[i].mass &gt;&gt; array[i].x &gt;&gt; array[i].y &gt;&gt; array[i].z &gt;&gt; array[i].sx &gt;&gt; array[i].sy &gt;&gt; array[i].sz;<br>	&#125;<br>	fp.<span class="hljs-built_in">close</span>();				<span class="hljs-comment">// 读写结束后关闭文件</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="b、文件输出"><a href="#b、文件输出" class="headerlink" title="b、文件输出"></a>b、文件输出</h3><p>一样，fstream也可以像cout一样使用，向文件写内容。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">write</span><span class="hljs-params">(planet *array, <span class="hljs-type">const</span> <span class="hljs-type">char</span> *file)</span>			</span><br><span class="hljs-function"></span>&#123;<br>	fstream fp;<br>	fp.<span class="hljs-built_in">open</span>(file, ios::out);<br>	<span class="hljs-keyword">if</span> (fp.<span class="hljs-built_in">bad</span>())<br>	&#123;<br>		cout &lt;&lt; <span class="hljs-string">&quot;output open error&quot;</span>;<br>	&#125;<br>	<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; max_size; i++)<br>	&#123;<br>		fp &lt;&lt; <span class="hljs-built_in">setprecision</span>(<span class="hljs-number">15</span>) &lt;&lt; <span class="hljs-built_in">setiosflags</span>(ios::left) &lt;&lt; array[i].mass &lt;&lt; <span class="hljs-string">&quot; &quot;</span> &lt;&lt; array[i].x &lt;&lt; <span class="hljs-string">&#x27; &#x27;</span><br>		   &lt;&lt; array[i].y &lt;&lt; <span class="hljs-string">&#x27; &#x27;</span> &lt;&lt; array[i].z &lt;&lt; <span class="hljs-string">&#x27; &#x27;</span><br>		   &lt;&lt; array[i].sx &lt;&lt; <span class="hljs-string">&#x27; &#x27;</span> &lt;&lt; array[i].sy &lt;&lt; <span class="hljs-string">&#x27; &#x27;</span> &lt;&lt; array[i].sz &lt;&lt; endl;<br>	&#125;<br>	fp.<span class="hljs-built_in">close</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="5、main函数"><a href="#5、main函数" class="headerlink" title="5、main函数"></a>5、main函数</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-type">double</span> start, end;<br>	planet array[max_size + <span class="hljs-number">16</span>];<br>	planet copy_planet[max_size + <span class="hljs-number">16</span>];<br>	<span class="hljs-built_in">read</span>(array);<br><br>	<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> count = <span class="hljs-number">20</span>; <span class="hljs-comment">//迭代20次</span><br>	<span class="hljs-type">char</span> series[] = <span class="hljs-string">&quot;series version.txt&quot;</span>, parallel1[] = <span class="hljs-string">&quot;parallel version1.txt&quot;</span>, parallel2[] = <span class="hljs-string">&quot;parallel version2.txt&quot;</span>;	<span class="hljs-comment">// 输出文件名</span><br><br>	<span class="hljs-built_in">memcpy</span>(copy_planet, array, max_size * <span class="hljs-built_in">sizeof</span>(planet)); <span class="hljs-comment">// 串行程序</span><br>	<span class="hljs-built_in">GET_TIME</span>(start);<br>	<span class="hljs-built_in">series_stimulus</span>(count, copy_planet);<br>	<span class="hljs-built_in">GET_TIME</span>(end)<br>	cout &lt;&lt; (<span class="hljs-type">double</span>)(end - start) &lt;&lt; endl;<br>	<span class="hljs-comment">// 要写出如文件请去掉本行注释，下面同理</span><br>	<span class="hljs-comment">// write(copy_planet, series);</span><br><br>	<span class="hljs-built_in">memcpy</span>(copy_planet, array, max_size * <span class="hljs-built_in">sizeof</span>(planet)); <span class="hljs-comment">// openmp程序</span><br>	<span class="hljs-built_in">GET_TIME</span>(start);<br>	<span class="hljs-built_in">parallel_stimulus1</span>(count, copy_planet);<br>	<span class="hljs-built_in">GET_TIME</span>(end)<br>	cout &lt;&lt; (<span class="hljs-type">double</span>)(end - start) &lt;&lt; endl;<br>	<span class="hljs-comment">// write(copy_planet, parallel1);</span><br><br>	<span class="hljs-built_in">memcpy</span>(copy_planet, array, max_size * <span class="hljs-built_in">sizeof</span>(planet)); <span class="hljs-comment">// pthread程序</span><br>	<span class="hljs-built_in">GET_TIME</span>(start);<br>	<span class="hljs-built_in">parallel_stimulus2</span>(count, copy_planet);<br>	<span class="hljs-built_in">GET_TIME</span>(end)<br>	cout &lt;&lt; (<span class="hljs-type">double</span>)(end - start) &lt;&lt; endl;<br>	<span class="hljs-comment">// write(copy_planet, parallel2);</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h1 id="二、总结"><a href="#二、总结" class="headerlink" title="二、总结"></a>二、总结</h1><p>完整代码在这个地方<a target="_blank" rel="noopener" href="https://github.com/peach-water/nbody_problem">连接</a>。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%AD%A6%E4%B9%A0/" class="print-no-link">#学习</a>
+      
+        <a href="/tags/%E5%B9%B6%E8%A1%8C%E8%AE%A1%E7%AE%97/" class="print-no-link">#并行计算</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>[学习]多线程</div>
+      <div>http://example.com/2021/05/05/学习-多线程/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>peach-water</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>May 5, 2021</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/09/12/%E6%8A%98%E8%85%BE-%E5%AE%89%E8%A3%85pyrealsense/" title="[折腾]安装pyrealsense">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[折腾]安装pyrealsense</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/04/12/%E6%90%9E%E7%AC%91-%E7%A8%8B%E5%BA%8F%E5%91%98%E7%AC%91%E8%AF%9D%E9%9B%86%E6%94%B6%E5%BD%95/" title="[搞笑]程序员笑话集收录">
+                        <span class="hidden-mobile">[搞笑]程序员笑话集收录</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,742 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="peach-water">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="小 Tips ⚠需要更加高级，细致到CPU时钟、缓存一致性、缓存命中率和分支预测准确率的估计考虑使用隔壁的 perf 工具⚠gprof只能检查工作在用户态的代码，如printf等内核态的代码无法剖析，⚠在那之前回顾 c++ 程序，函数的声明与函数的定义二者之间区别。✔非常赞赏使用 git 代码管理工具。✔非常赞同合作写代码时规定一个统一的风格规范。    ✔推荐使用 Makefile 自动构建工具">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[学习]C++性能分析实战">
+<meta property="og:url" content="http://example.com/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="小 Tips ⚠需要更加高级，细致到CPU时钟、缓存一致性、缓存命中率和分支预测准确率的估计考虑使用隔壁的 perf 工具⚠gprof只能检查工作在用户态的代码，如printf等内核态的代码无法剖析，⚠在那之前回顾 c++ 程序，函数的声明与函数的定义二者之间区别。✔非常赞赏使用 git 代码管理工具。✔非常赞同合作写代码时规定一个统一的风格规范。    ✔推荐使用 Makefile 自动构建工具">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/%E4%BB%A3%E7%A0%81%E9%A3%8E%E6%A0%BC%E7%A4%BA%E4%BE%8B.PNG">
+<meta property="og:image" content="http://example.com/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/a6e2ecc6-6f1f-46c8-a929-462ef2acdde6.png">
+<meta property="og:image" content="http://example.com/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/91567ac0-37e8-4a4d-bdc2-46f36b471837.png">
+<meta property="og:image" content="http://example.com/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/65488e8e-5fc8-4e38-9bc9-9925e1eb4034.png">
+<meta property="og:image" content="http://example.com/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/a2efc85e-e7de-41c0-bb43-8725d8eb6b4a.png">
+<meta property="og:image" content="http://example.com/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/d64eea68-5902-4dd5-9705-9d0cc87c1550.jfif">
+<meta property="article:published_time" content="2024-11-12T14:28:32.000Z">
+<meta property="article:modified_time" content="2024-11-13T05:22:43.760Z">
+<meta property="article:author" content="peach-water">
+<meta property="article:tag" content="分享">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="性能分析">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/%E4%BB%A3%E7%A0%81%E9%A3%8E%E6%A0%BC%E7%A4%BA%E4%BE%8B.PNG">
+  
+  
+  
+  <title>[学习]C++性能分析实战 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="[学习]C++性能分析实战"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-11-12 22:28" pubdate>
+          November 12, 2024 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.7k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          31 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">[学习]C++性能分析实战</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="小-Tips"><a href="#小-Tips" class="headerlink" title="小 Tips"></a>小 Tips</h1><blockquote>
+<p>⚠需要更加高级，细致到CPU时钟、缓存一致性、缓存命中率和分支预测准确率的估计考虑使用隔壁的 perf 工具<br>⚠gprof只能检查工作在用户态的代码，如printf等内核态的代码无法剖析，<br>⚠在那之前回顾 c++ 程序，函数的声明与函数的定义二者之间区别。<br>✔非常赞赏使用 git 代码管理工具。<br>✔非常赞同合作写代码时规定一个统一的风格规范。</p>
+</blockquote>
+<p><img src="/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/%E4%BB%A3%E7%A0%81%E9%A3%8E%E6%A0%BC%E7%A4%BA%E4%BE%8B.PNG" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>✔推荐使用 Makefile 自动构建工具。熟知 cmake 工具使用的话，更好。<br>✔给自己的代码库写一个 README.md 文件</p>
+</blockquote>
+<h2 id="STL-库的使用"><a href="#STL-库的使用" class="headerlink" title="STL 库的使用"></a>STL 库的使用</h2><blockquote>
+<p>📌如果编译器能正确优化这两部分的调用，也许差别不大。但在一个逻辑复杂的类调用里面，指望编译器优化是不可行的。<br>⚠STL库相比指针实现真的慢非常多，因此在考虑 return std::vector std::map std::list 等等 STL 库之前一定要想清楚，真的非 return 这些不可？能不能传一个 vector map list 的引用或者一个指针？</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function">map&lt;<span class="hljs-type">int</span>, <span class="hljs-type">int</span>&gt; <span class="hljs-title">copyReturn</span><span class="hljs-params">(<span class="hljs-type">int</span> n)</span></span>&#123;<br>    map&lt;<span class="hljs-type">int</span>, <span class="hljs-type">int</span>&gt; res;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)<br>        res[i] = i;<br>    <span class="hljs-keyword">return</span> res;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">refReturn</span><span class="hljs-params">(map&lt;<span class="hljs-type">int</span>, <span class="hljs-type">int</span>&gt; &amp;res, <span class="hljs-type">int</span> n)</span></span>&#123;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)<br>        res[i]=i;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>以上两种实现方式都可以获得一个操作后的 map 数据类型，唯一不同的是返回形式，第一种返回 stl 容器本身，第二种 stl 容器则以引用参数的形式传递。<br>二者最大的差异在于返回 stl 容器，会引入额外的 stl 容器的创建和销毁过程。而引用形式则可以避免这部分额外开销。当我以<code>n=10</code>的规模大量调用超过<code>1千万</code>次时，二者的性能有显著的差别。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">wa@HAS-T640:~/EDA8$ g++ b.cpp -o b<br>wa@HAS-T640:~/EDA8$ ./b<br>copyReturn: 35808ms<br>refReturn: 30298ms<br></code></pre></td></tr></table></figure>
+<blockquote>
+<p>⚠std::map 基于红黑树，而 std::unordered_map 是真正意义上基于散列函数，在考虑 O(1) 和 O(logn) 的时间复杂度之前问问自己，自己的数据量是否大到算法的时间复杂度超过了常数部分。</p>
+</blockquote>
+<p>同样的代码，把 map 换成 unordered_map 再次执行会得到以下结果。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">wa@HAS-T640:~/EDA8$ g++ b.cpp -o b<br>wa@HAS-T640:~/EDA8$ ./b<br>copyReturn: 42165ms<br>refReturn: 40512ms<br></code></pre></td></tr></table></figure>
+<p>基于 $O(1)$ 实践复杂度散列函数的容器并没有如期望那般在运行时间上打败 $O(nlogn)$ 时间复杂度的容器。</p>
+<h2 id="正确使用-Inline-修饰"><a href="#正确使用-Inline-修饰" class="headerlink" title="正确使用 Inline 修饰"></a>正确使用 Inline 修饰</h2><blockquote>
+<p>⚠需要大量调用的函数，例如仅仅 return 一个 class 内 private 值，也许应该尝试把 private 移动到 public 类型中，减少函数调用带来的性能开销。这便是 inline 修饰的意义。<br>⚠加上 inline 关键字并开启 -O2 以上的优化级别，剩下的靠编译器。当然，要熟知 inline 关键字修饰的本质，写的 inline 关键字才能被真正识别。</p>
+</blockquote>
+<p>Inline 关键字的本质是把函数定义插入到调用的地方，从而减少调用栈的开销。<br>以下举例来自某小队的代码实现。<br>代码中有一处计算用的特别多，计算两个点的曼哈顿距离，他们在 *.hpp 文件声明了这个函数。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">double</span> <span class="hljs-title">getManhatonDistance</span><span class="hljs-params">(Position &amp;u, Position &amp;v)</span></span>;<br></code></pre></td></tr></table></figure>
+<p>然后在对应的<code>*.cpp</code>文件实现这个函数。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">double</span> <span class="hljs-title">getManhatonDistance</span><span class="hljs-params">(Position &amp;u, Position &amp;v)</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">abs</span>(u.x - v.x) + <span class="hljs-built_in">abs</span>(u.y - v.y);<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>编译程序开启了<code>-O2</code>级别的优化，理论上编译器识别这种<code>inline</code>的函数十分轻松，是不应该出现不优化的情况的。事实不然，测试实际，这个函数被调用42亿次，且都是正常函数调用栈。</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs txt">Flat profile:<br><br>Each sample counts as 0.01 seconds.<br>  %   cumulative   self              self     total           <br> time   seconds   seconds    calls   s/call   s/call  name    <br> 38.56      5.19     5.19       94     0.06     0.09  KMeans::assignLabels(std::vector&lt;Position, std::allocator&lt;Position&gt; &gt;&amp;)<br> 37.75     10.27     5.08 4218676471     0.00     0.00  getManhatonDistance(Position&amp;, Position&amp;)<br> 18.28     12.73     2.46        4     0.62     0.97  KMeans::initCenters(std::vector&lt;Position, std::allocator&lt;Position&gt; &gt;&amp;)<br>  5.20     13.43     0.70   146159     0.00     0.00  frame_dummy<br>  0.07     13.44     0.01    49680     0.00     0.00  ClockTreeNode::setFather(ClockTreeNode&amp;)<br>  0.07     13.45     0.01     5885     0.00     0.00  void std::vector&lt;int, std::allocator&lt;int&gt; &gt;::_M_realloc_insert&lt;int const&amp;&gt;(__gnu_cxx::__normal_iterator&lt;int*, std::vector&lt;int, std::allocator&lt;int&gt; &gt; &gt;, int const&amp;)<br>  0.07     13.46     0.01       51     0.00     0.00  void std::vector&lt;ClockTreeNode, std::allocator&lt;ClockTreeNode&gt; &gt;::_M_realloc_insert&lt;ClockTreeNode const&amp;&gt;(__gnu_cxx::__normal_iterator&lt;ClockTreeNode*, std::vector&lt;ClockTreeNode, std::allocator&lt;ClockTreeNode&gt; &gt; &gt;, ClockTreeNode const&amp;)<br>  0.00     13.46     0.00   101270     0.00     0.00  std::vector&lt;Position, std::allocator&lt;Position&gt; &gt;::_M_default_append(unsigned long)<br>  0.00     13.46     0.00    49681     0.00     0.00  ClockTreeNode::printComponent(std::ostream&amp;)<br>  0.00     13.46     0.00    49680     0.00     0.00  ClockTreeNode::addChild(ClockTreeNode&amp;)<br>  0.00     13.46     0.00      988     0.00     0.00  ClockTreeNode::printNet(std::ostream&amp;)<br>  0.00     13.46     0.00       94     0.00     0.00  KMeans::updateNewCenters(std::vector&lt;Position, std::allocator&lt;Position&gt; &gt;&amp;)<br>  0.00     13.46     0.00       34     0.00     0.00  void std::vector&lt;Position, std::allocator&lt;Position&gt; &gt;::_M_realloc_insert&lt;Position const&amp;&gt;(__gnu_cxx::__normal_iterator&lt;Position*, std::vector&lt;Position, std::allocator&lt;Position&gt; &gt; &gt;, Position const&amp;)<br>  0.00     13.46     0.00        6     0.00     0.00  UnionFind::getRoot(int)<br>  0.00     13.46     0.00        5     0.00     0.00  std::vector&lt;int, std::allocator&lt;int&gt; &gt;::_M_default_append(unsigned long)<br>  0.00     13.46     0.00        4     0.00     0.00  KMeans::deleteEmpty(std::vector&lt;Position, std::allocator&lt;Position&gt; &gt;&amp;)<br>  0.00     13.46     0.00        4     0.00     3.18  KMeans::fit(std::vector&lt;ClockTreeNode, std::allocator&lt;ClockTreeNode&gt; &gt;&amp;)<br>  0.00     13.46     0.00        2     0.00     0.00  std::vector&lt;double, std::allocator&lt;double&gt; &gt;::_M_default_append(unsigned long)<br>  0.00     13.46     0.00        1     0.00     0.00  _GLOBAL__sub_I__Z16parseProblemFileRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEER11NetlistInfoRSt6vectorI13ClockTreeNodeSaISA_EE<br>  0.00     13.46     0.00        1     0.00     0.00  _GLOBAL__sub_I__ZN6KMeans3fitERSt6vectorI13ClockTreeNodeSaIS1_EE<br>  0.00     13.46     0.00        1     0.00     0.00  _GLOBAL__sub_I__ZN7safeNum3addEi<br>  0.00     13.46     0.00        1     0.00     0.00  _GLOBAL__sub_I_kmeans<br></code></pre></td></tr></table></figure>
+<p>📌原因出在，*.hpp 只给出程序声明，并没有定义。编译器无法将函数插入到代码块中，也就没有执行 inline 修饰的代码优化。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">double</span> <span class="hljs-title">getManhatonDistance</span><span class="hljs-params">(Position &amp;u, Position &amp;v)</span></span>; <span class="hljs-comment">// 在 hpp 文件强行修改 inline</span><br><span class="hljs-comment">// 错误方法，注意这只是函数的声明，没有解决错误</span><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">double</span> <span class="hljs-title">getManhatonDistance</span><span class="hljs-params">(Position &amp;u, Position &amp;v)</span></span>; <span class="hljs-comment">// 会在其他 cpp 文件引起函数未定义的错误</span><br><span class="hljs-comment">// 正确方法是，修改成函数的定义，加上函数实现部分</span><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">double</span> <span class="hljs-title">getManhatonDistance</span><span class="hljs-params">(Position &amp;u, Position &amp;v)</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">abs</span>(u.x - v.x) + <span class="hljs-built_in">abs</span>(u.y - v.y);<br>&#125; <span class="hljs-comment">// 然后在 cpp 中删去这部分实现代码，防止重定义错误</span><br></code></pre></td></tr></table></figure>
+<p>🔥仅这一步，我们就优化了程序 33% 的运行时间。</p>
+<h2 id="判断条件-tips"><a href="#判断条件-tips" class="headerlink" title="判断条件 tips"></a>判断条件 tips</h2><blockquote>
+<p>⚠尽量不要在判断条件中引入过于复杂的函数，执行时间很长的函数。<br>⚠非写不可，需要按照各个函数执行用时从低到高的顺序从左往右写。如果某个条件判断 false 概率更高，则可以适当提前。</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">bool</span> result = <span class="hljs-literal">true</span>;<br><span class="hljs-keyword">if</span> (!<span class="hljs-built_in">readInputNodes</span>(inputNodeFileName)) <span class="hljs-comment">// 读 Node 文件，并返回 true 和 false 表示是否读完</span><br>&#123;<br>  result = <span class="hljs-literal">false</span>;<br>&#125;<br><span class="hljs-keyword">if</span> (!<span class="hljs-built_in">readInputTiming</span>(inputTimingFileName) &amp;&amp; result) <span class="hljs-comment">// 读 timing 文件，返回 true 和 false 表示是否读完</span><br>&#123; <span class="hljs-comment">// 这里是明显存在依赖性的，Node 读取不正确，后续的时序关键就没必要继续执行，直接返回。</span><br>  <span class="hljs-comment">// 但是这样的顺序，程序会先执行函数，然后判断 result 的状态，</span><br>  <span class="hljs-comment">// 如果 result 为 false 那么函数的执行已经没有任何意义了。</span><br>  result = <span class="hljs-literal">false</span>;<br>&#125;<br><span class="hljs-comment">// 以下是正确写法</span><br><span class="hljs-keyword">if</span> (result &amp;&amp; !<span class="hljs-built_in">readInputNets</span>(inputNetFileName))&#123;&#125; <span class="hljs-comment">// 读 net 文件，……</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="makefile-自动构建工具的使用"><a href="#makefile-自动构建工具的使用" class="headerlink" title="makefile 自动构建工具的使用"></a>makefile 自动构建工具的使用</h2><blockquote>
+<p>📌建议使用自动化构建工具。<br>⚠但是本比赛不推荐 cmake 工具，因为 cmake 的语法复杂，上手难度较高，日后管理大型项目构建时，再学也来得及。</p>
+</blockquote>
+<p>在当前文件夹内创建<code>Makefile</code>文件，并以扁平式分布所有的源代码文件。<br>例如，程序需要<code>global.cpp</code> <code>util.cpp</code> <code>rsmt.cpp</code> <code>arch.cpp</code> <code>lib.cpp</code> <code>object.cpp</code> <code>netlist.cpp</code> <code>main.cpp</code> <code>algorithm.cpp</code>共计 9 个源代码文件编译得到，写出以下的 makefile 内容。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs makefile">SRC = global.cpp util.cpp rsmt.cpp arch.cpp lib.cpp object.cpp netlist.cpp main.cpp algorithm.cpp<br>OBJ = $(SRC:.cpp=.o)<br>CC = g++<br><br>CFLAGS = -Wall -Wextra -std=c++11<br>CFLAGS += -fopenmp -g<br><br><span class="hljs-section">all: checker</span><br><br><span class="hljs-section">checker: <span class="hljs-variable">$(OBJ)</span></span><br>    <span class="hljs-variable">$(CC)</span> <span class="hljs-variable">$(CFLAGS)</span> -o main <span class="hljs-variable">$(OBJ)</span><br><br><span class="hljs-section">%.o: %.cpp</span><br>    <span class="hljs-variable">$(CC)</span> <span class="hljs-variable">$(CFLAGS)</span> -c <span class="hljs-variable">$&lt;</span> -o <span class="hljs-variable">$@</span><br><br><span class="hljs-section">clean:</span><br>    rm -f main <span class="hljs-variable">$(OBJ)</span><br></code></pre></td></tr></table></figure>
+<p>其中，以下规定了当前程序内编译的内容，对象和编译参数</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs makefile">SRC = global.cpp util.cpp rsmt.cpp arch.cpp lib.cpp object.cpp netlist.cpp main.cpp algorithm.cpp // 编译源文件<br>OBJ = $(SRC:.cpp=.o) // 指定编译对象<br>CC = g++ // 指定编译器<br><br>CFLAGS = -Wall -Wextra -std=c++11 // 规定基本编译参数<br>CFLAGS += -fopenmp -g // 附加参数<br></code></pre></td></tr></table></figure>
+<p>然后是编译指令，checker 指令规定了，我们在终端执行<code>make checker</code>命令时会发生什么。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs makefile"><span class="hljs-section">checker: <span class="hljs-variable">$(OBJ)</span> // 冒号后表示编译 checker 依赖，$ 符号表示以变量形式看待</span><br>    <span class="hljs-variable">$(CC)</span> <span class="hljs-variable">$(CFLAGS)</span> -o main <span class="hljs-variable">$(OBJ)</span> // 翻译过来这里写的是 g++ -Wall -Wextra -std=c++11 -fopenmp -g -o main [*.o]<br>    <br><span class="hljs-section">%.o: %.cpp // 实际上 <span class="hljs-variable">$(OBJ)</span> 恰好是 global.o util.o 等等的缩写，会匹配到这个规则</span><br>    <span class="hljs-variable">$(CC)</span> <span class="hljs-variable">$(CFLAGS)</span> -c <span class="hljs-variable">$&lt;</span> -o <span class="hljs-variable">$@</span><br></code></pre></td></tr></table></figure>
+<p>最后是用于清理的指令，在终端执行<code>make clean</code>实际上执行的是<code>rm -f main global.o util.o ...</code></p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs makefile"><span class="hljs-section">clean:</span><br>    rm -f main <span class="hljs-variable">$(OBJ)</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="一、Gprof工具的使用"><a href="#一、Gprof工具的使用" class="headerlink" title="一、Gprof工具的使用"></a>一、Gprof工具的使用</h1><blockquote>
+<p>⚠工具主要用于分析函数调用，不要引入多线程，尤其是锁机制会误导热点分析。<br>⚠建议开启编译器 -O2 级别的优化。</p>
+</blockquote>
+<p>gprof 通常作为 GNU Binutils 的一部分，在大多是 Linux 发行版中已经集成。<br>gprof 是 GNU 项目中性能分析工具，用于分析每个 C、C++ 函数调用和函数调用时间。它通过测量程序执行过程中的函数调用频率和运行时间来帮助定位程序热点和热点函数。从而定位可能的性能瓶颈。</p>
+<h2 id="1、使用步骤"><a href="#1、使用步骤" class="headerlink" title="1、使用步骤"></a>1、使用步骤</h2><h3 id="a、编译前"><a href="#a、编译前" class="headerlink" title="a、编译前"></a>a、编译前</h3><p>在使用 gcc 编译 C++ 程序代码时，在编译参数内加入 <code>-pg</code> 告诉编译器引入 gprof 代码，例如：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">g++ -g -pg -o main main.cpp<br></code></pre></td></tr></table></figure>
+<p>这段程序会包含带有 <code>gprof</code> 性能分析所需的全部代码。<br>🔥正式提交程序记得删除编译参数 <code>-pg</code> ，性能分析所需代码本身会拖慢程序。</p>
+<h3 id="b、像平常一样运行程序"><a href="#b、像平常一样运行程序" class="headerlink" title="b、像平常一样运行程序"></a>b、像平常一样运行程序</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">./main<br></code></pre></td></tr></table></figure>
+<p>正常运行程序后，会在本地目录下生成一个 <code>gmon.out</code> 的文件，文件内记录程序运行的所有信息。</p>
+<h3 id="c、可视化报告"><a href="#c、可视化报告" class="headerlink" title="c、可视化报告"></a>c、可视化报告</h3><p>调用 <code>gprof</code> 工具可视化 <code>gmon.out</code> 文件，执行一下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">gprof main gmon.out &gt; analysis.txt<br></code></pre></td></tr></table></figure>
+<p>得到一个 <code>analysis.txt</code> 的文本文件，里面记载程序运行的函数调用信息和数据信息。</p>
+<h2 id="2、如何分析"><a href="#2、如何分析" class="headerlink" title="2、如何分析"></a>2、如何分析</h2><h3 id="a、第一部分"><a href="#a、第一部分" class="headerlink" title="a、第一部分"></a>a、第一部分</h3><p>初次打开 <code>analysis.txt</code> 文件，看到内容如下：<br><img src="/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/a6e2ecc6-6f1f-46c8-a929-462ef2acdde6.png" srcset="/img/loading.gif" lazyload></p>
+<p>一列一列来观察：</p>
+<ol>
+<li>第一列说明当前函数运行时间占程序总运行时间的百分比。这里一眼看到 Pin::getTimingCritical() 调用了 12 亿次，占用时间高达 16% ，优化的第一步必然是它。</li>
+<li>第二列是累计运行时间，一般不关注。</li>
+<li>第三列是函数运行时间，可以看到这个函数 Pin::getTimingCritical 总共的运行时间为 3 秒。</li>
+<li>第四列说明函数被调用次数。有时候一个函数运行缓慢不是函数本身问题，是被 call 了太多次。因此函数本身不是优化对象应该重点关照其调用次数。</li>
+</ol>
+<h3 id="b、第二部分"><a href="#b、第二部分" class="headerlink" title="b、第二部分"></a>b、第二部分</h3><p>看完第一部分，可以基本了解程序中热点和热点产生的原因，但是无法告诉你如何去优化，比如知道 <code>Pin::getTimingCritical</code> 函数被调用很多次，但是不知道在哪些地方被调用了。<br>这时候继续向下查看，在大约 <code>1000~5000</code> 行左右的位置，观察到如下所示结果：</p>
+<p><img src="/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/91567ac0-37e8-4a4d-bdc2-46f36b471837.png" srcset="/img/loading.gif" lazyload></p>
+<ol>
+<li>第一列告诉你，当前函数运行时间占总时间的百分比，打头的一定是 main 函数。</li>
+<li>第二列，函数自身用时，不包括函数内部调用的用时，例如 Tile::sendOutOffer 函数占用了 51 秒运行时间的 46 秒，但是自身运行仅仅 0.03 秒，因此 Tile::sendOutOffer 自身不是性能瓶颈，问题在这个函数内部调用上。</li>
+<li>第三列，函数加上内部调用总运行时间。</li>
+<li>第四列，左边是在 main 中该函数调用次数，右边是总调用次数。用于定位调用次数的热点。</li>
+<li>第五列，函数名称，附带的方括号是 index 列的位置。</li>
+</ol>
+<p><img src="/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/65488e8e-5fc8-4e38-9bc9-9925e1eb4034.png" srcset="/img/loading.gif" lazyload></p>
+<p>继续往下，查看 <code>Tile::sendOutOffer</code> 函数的运行时间占比，发现 <code>scorecompute</code> 是大头。并且 <code>Tile::sendOutOffer</code> 贡献了 <code>scoreCompute</code> 超过 99% 的调用次数。<br>基本确定方针，优化 <code>scoreCompute</code> 的运行时间，减少 <code>Tile::sendOutOffer</code> 对 <code>scoreCompute</code> 的非必要调用。</p>
+<h2 id="3、多线程"><a href="#3、多线程" class="headerlink" title="3、多线程"></a>3、多线程</h2><p>这个方法也能看到多线程的程序运行时间，但是不建议。里面统计的函数调用次数不可信，子函数调用时间基本不可信。但是在锁机制等相关信息的探查上可以看出一些端倪。<br>比如说：如果程序使用过多锁机制，锁同步是程序缓慢的重要原因，那么可以看到 lock 的加锁函数调用占用了大量时间。</p>
+<h1 id="二、valgrind-多线程性能分析"><a href="#二、valgrind-多线程性能分析" class="headerlink" title="二、valgrind 多线程性能分析"></a>二、valgrind 多线程性能分析</h1><blockquote>
+<p>想到吧，内存检测工具也提供了对于多线程锁竞争的性能分析。这里尝试使用其中线程分析工具来定位多线程程序运行缓慢问题。<br>本质上是使用 ValGrind 的函数调用分析工具实现的。</p>
+</blockquote>
+<p>一些说明</p>
+<ol>
+<li>相比 gprof 在编译程序时不需要额外参数，但是推荐加上 <code>-g</code> 调试参数。</li>
+<li>这个工具不建议开启任何的代码优化选项，如 <code>-O2</code> 、 <code>-O3</code> 等等，防止定位到错误的代码行。</li>
+<li>原始输出十分难以阅读，建议使用部分开源的数据阅读器（如 <a target="_blank" rel="noopener" href="https://github.com/KDE/kcachegrind"><code>kcachegrind</code></a>）进行可视化性能分析。</li>
+</ol>
+<h2 id="1、使用步骤-1"><a href="#1、使用步骤-1" class="headerlink" title="1、使用步骤"></a>1、使用步骤</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">valgrind --tool=callgrind ./a.out<br></code></pre></td></tr></table></figure>
+<p>如果是多线程，那么需要额外加上一行参数，<code>valgrind</code> 工具会为每个线程单独生成一个记录文件 <code>callgrind.out.xxx</code> （其中的xxx代表进程号），方便之后探查。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">valgrind --tool=callgrind -separate-threads=<span class="hljs-built_in">yes</span> ./a.out<br></code></pre></td></tr></table></figure>
+<p>如果使用上面的工具，则会生成多个记录文件 <code>callgrind.out.xxx</code> 和 <code>callgrind.out.xxx-01</code> …… 后面的数字代表不同的线程。</p>
+<h2 id="2、如何分析-1"><a href="#2、如何分析-1" class="headerlink" title="2、如何分析"></a>2、如何分析</h2><p>找到上一步生成的文件 <code>callgrind.out.xxx</code> ，如果有可视化分析工具，可以使用工具打开文件。这里将要说明如果没有下载工具如何去分析程序。</p>
+<h3 id="a、没有可视化工具时"><a href="#a、没有可视化工具时" class="headerlink" title="a、没有可视化工具时"></a>a、没有可视化工具时</h3><p>利用自带的 <code>callgrind_annotate</code> 工具，然后把输出写到 run.log 上并打开。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">callgrind_annotate ./callgrind.out.xxx &gt; run.log<br></code></pre></td></tr></table></figure>
+<p>打开文件发现如下：<br><img src="/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/a2efc85e-e7de-41c0-bb43-8725d8eb6b4a.png" srcset="/img/loading.gif" lazyload></p>
+<ol>
+<li>忽略<font color="#00b0f0">淡蓝色框</font>内容，那只是一些基本信息。</li>
+<li><font color="#ff0000">红色框1</font>，函数头开始部分是一个绝对路径，说明是标准库的调用，这里举例是 malloc 和 free 标准库。</li>
+<li><font color="#ff0000">红色框2</font>，函数头是 <code>???</code> 是本地代码，编译时没有绝对路径，可以以此区分标准库和自己实现的部分。<br>但是，这个程序的功能也就到此为止了，只能看到哪些函数的调用次数最多，完全看不见各个函数的执行时间与调用栈的分布情况。</li>
+</ol>
+<h3 id="b、有可视化工具时"><a href="#b、有可视化工具时" class="headerlink" title="b、有可视化工具时"></a>b、有可视化工具时</h3><p>这里因为打不开服务器的远程桌面了，网上找了一个类似的图，效果差不多。<br><img src="/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/d64eea68-5902-4dd5-9705-9d0cc87c1550.jfif" srcset="/img/loading.gif" lazyload></p>
+<h2 id="3、番外"><a href="#3、番外" class="headerlink" title="3、番外"></a>3、番外</h2><blockquote>
+<p>valgraind工具还可以检测锁竞争和死锁情况。使用<code>helgrind</code>工具可以检测锁竞争情况。</p>
+</blockquote>
+<h1 id="三、Vtune多线程分析工具"><a href="#三、Vtune多线程分析工具" class="headerlink" title="三、Vtune多线程分析工具"></a>三、Vtune多线程分析工具</h1><blockquote>
+<p>仅Intel的CPU可用，具体可以参考intel的官网手册。因为我是 AMD 铁粉，没有 intel 的 U 就没有介绍。</p>
+</blockquote>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%88%86%E4%BA%AB/" class="print-no-link">#分享</a>
+      
+        <a href="/tags/%E5%AD%A6%E4%B9%A0/" class="print-no-link">#学习</a>
+      
+        <a href="/tags/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/" class="print-no-link">#性能分析</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>[学习]C++性能分析实战</div>
+      <div>http://example.com/2024/11/12/学习-C-性能分析实战/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>peach-water</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>November 12, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/09/18/%E6%8A%98%E8%85%BE-%E7%BC%96%E8%AF%91pytorch/" title="[折腾]编译pytorch">
+                        <span class="hidden-mobile">[折腾]编译pytorch</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

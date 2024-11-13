@@ -1,0 +1,666 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="peach-water">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="初识Huffman简单说明Huffman编码的原理　　实现霍夫曼编码的方式主要是创建一个二叉树和其节点。这些树的节点可以存储在数组里，数组的大小为符号（symbols）数的大小n，而节点分别是终端节点（叶节点）与非终端节点（内部节点）。 　　一开始，所有的节点都是终端节点，节点内有三个字段： 　　1.符号（Symbol） 　　2.权重（Weight、Probabilities、Frequency）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[学习]huffman压缩">
+<meta property="og:url" content="http://example.com/2020/11/01/%E5%AD%A6%E4%B9%A0-huffman/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="初识Huffman简单说明Huffman编码的原理　　实现霍夫曼编码的方式主要是创建一个二叉树和其节点。这些树的节点可以存储在数组里，数组的大小为符号（symbols）数的大小n，而节点分别是终端节点（叶节点）与非终端节点（内部节点）。 　　一开始，所有的节点都是终端节点，节点内有三个字段： 　　1.符号（Symbol） 　　2.权重（Weight、Probabilities、Frequency）">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-11-01T10:01:10.000Z">
+<meta property="article:modified_time" content="2024-11-12T14:25:56.333Z">
+<meta property="article:author" content="peach-water">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>[学习]huffman压缩 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="[学习]huffman压缩"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2020-11-01 18:01" pubdate>
+          November 1, 2020 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.7k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          23 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">[学习]huffman压缩</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="初识Huffman"><a href="#初识Huffman" class="headerlink" title="初识Huffman"></a>初识Huffman</h2><p>简单说明Huffman编码的原理<br>　　实现霍夫曼编码的方式主要是创建一个二叉树和其节点。这些树的节点可以存储在数组里，数组的大小为符号（symbols）数的大小n，而节点分别是终端节点（叶节点）与非终端节点（内部节点）。</p>
+<p>　　一开始，所有的节点都是终端节点，节点内有三个字段：</p>
+<p>　　1.符号（Symbol）</p>
+<p>　　2.权重（Weight、Probabilities、Frequency）</p>
+<p>　　3.指向父节点的链接（Link to its parent node）</p>
+<p>　　而非终端节点内有四个字段：</p>
+<p>　　1.权重（Weight、Probabilities、Frequency）</p>
+<p>　　2.指向两个子节点的 链接（Links to two child node）</p>
+<p>　　3.指向父节点的链接（Link to its parent node）</p>
+<p>　　基本上，我们用’0’与’1’分别代表指向左子节点与右子节点，最后为完成的二叉树共有n个终端节点与n-1个非终端节点，去除了不必要的符号并产生最佳的编码长度。</p>
+<p>　　过程中，每个终端节点都包含着一个权重（Weight、Probabilities、Frequency），两两终端节点结合会产生一个新节点，新节点的权重是由两个权重最小的终端节点权重之总和，并持续进行此过程直到只剩下一个节点为止。</p>
+<p>　　实现霍夫曼树的方式有很多种，可以使用优先队列（Priority Queue）简单达成这个过程，给与权重较低的符号较高的优先级（Priority），算法如下：</p>
+<p>　　⒈把n个终端节点加入优先队列，则n个节点都有一个优先权Pi，1 ≤ i ≤ n</p>
+<p>　　⒉如果队列内的节点数&gt;1，则：</p>
+<p>　　　⑴从队列中移除两个最小的Pi节点，即连续做两次remove（min（Pi）, Priority_Queue)<br>　　　⑵产生一个新节点，此节点为（1）之移除节点之父节点，而此节点的权重值为（1）两节点之权重和<br>　　　⑶把（2）产生之节点加入优先队列中<br>　　⒊最后在优先队列里的点为树的根节点（root）<br>　　<br>　　而此算法的时间复杂度（ Time Complexity）为O（n log n）；因为有n个终端节点，所以树总共有2n-1个节点，使用优先队列每个循环须O（log n）。</p>
+<p>　　此外，有一个更快的方式使时间复杂度降至线性时间（Linear Time）O（n），就是使用两个队列（Queue）创件霍夫曼树。第一个队列用来存储n个符号（即n个终端节点）的权重，第二个队列用来存储两两权重的合（即非终端节点）。此法可保证第二个队列的前端（Front）权重永远都是最小值，且方法如下：</p>
+<p>　　⒈把n个终端节点加入第一个队列（依照权重大小排列，最小在前端）<br>　<br>　　⒉如果队列内的节点数&gt;1，则：</p>
+<p>　　　⑴从队列前端移除两个最低权重的节点<br>　　　⑵将（1）中移除的两个节点权重相加合成一个新节点<br>　　　⑶加入第二个队列<br>　　⒊最后在第一个队列的节点为根节点</p>
+<p>　　虽然使用此方法比使用优先队列的时间复杂度还低，但是注意此法的第1项，节点必须依照权重大小加入队列中，如果节点加入顺序不按大小，则需要经过排序，则至少花了O（n log n）的时间复杂度计算。</p>
+<p>　　但是在不同的状况考量下，时间复杂度并非是最重要的，如果我们今天考虑英文字母的出现频率，变量n就是英文字母的26个字母，则使用哪一种算法时间复杂度都不会影响很大，因为n不是一个庞大的数字。</p>
+<h2 id="实现方法"><a href="#实现方法" class="headerlink" title="实现方法"></a>实现方法</h2><p>话不多说，直接上具体代码，这里仅展现部分核心代码。</p>
+<h3 id="Huffman节点的定义"><a href="#Huffman节点的定义" class="headerlink" title="Huffman节点的定义"></a>Huffman节点的定义</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Hufnode</span>&#123;<br>	<span class="hljs-keyword">struct</span> <span class="hljs-title class_">Hufnode</span> *lc;		<span class="hljs-comment">//左右子树</span><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Hufnode</span> *rc;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> pow;		<span class="hljs-comment">//当前节点的权重</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> Data;		<span class="hljs-comment">//这个节点如果是叶子结点，那么存储编码对应的字符</span><br>    <span class="hljs-type">bool</span> leaf;				<span class="hljs-comment">//标记是否是字符</span><br>    string code;			<span class="hljs-comment">//存储对应的Huffman编码</span><br>    <span class="hljs-built_in">Hufnode</span>() : <span class="hljs-built_in">lc</span>(<span class="hljs-literal">NULL</span>), <span class="hljs-built_in">rc</span>(<span class="hljs-literal">NULL</span>), <span class="hljs-built_in">leaf</span>(<span class="hljs-literal">true</span>)&#123;&#125;	<span class="hljs-comment">//初始化节点</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="Huffman树的构建"><a href="#Huffman树的构建" class="headerlink" title="Huffman树的构建"></a>Huffman树的构建</h3><p>根据开头介绍的两种方法，各有千秋，其中我们使用比较容易理解的方法，此处不使用优先队列等等优化性的算法，转向使用冒泡排序，因为排序的内容不算多，而且在第一次排序完成之后不会有较多的排序要求，我们可以通过对冒泡优化加快速度（使其变成一个插入算法）。</p>
+<p>此处建立一个class类，实现Huffman树的构建和相关功能。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Hufman</span>&#123;<br>	<span class="hljs-keyword">private</span>:<br>    	Hufnode * root	<span class="hljs-comment">//记录下Huffman树的根节点</span><br>        map&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>, string&gt; code_map	<span class="hljs-comment">//用来快速访问字符对应的Huffman编码</span><br>    <span class="hljs-keyword">public</span>:<br>        <span class="hljs-built_in">Hufman</span>();	<span class="hljs-comment">//构造函数，初始化Huffman树</span><br>        <span class="hljs-function">Hufnode *<span class="hljs-title">return_root</span><span class="hljs-params">()</span></span>;  				<span class="hljs-comment">//获得当前Huffman树的根节点</span><br>        <span class="hljs-function"><span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> <span class="hljs-title">pow_len</span><span class="hljs-params">()</span></span>;				    <span class="hljs-comment">//返回文件拥有的字符数量  </span><br>        <span class="hljs-function">string <span class="hljs-title">return_code</span><span class="hljs-params">(<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> c)</span></span>;	<span class="hljs-comment">//根据字符返回对应的Huffman编码  </span><br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">destroy</span><span class="hljs-params">(Hufnode *root)</span></span>;	    	<span class="hljs-comment">//递归调用，解构函数</span><br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">build_huf</span><span class="hljs-params">(Hufnode data[], <span class="hljs-type">int</span> size)</span></span>;	<span class="hljs-comment">//构建Huffman树，输入的是节点数量和节点  </span><br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">update_code</span><span class="hljs-params">(Hufnode *root, string fa, <span class="hljs-type">const</span> <span class="hljs-type">char</span> *c)</span></span>;	<span class="hljs-comment">//根据建立的Huffman树，递归给每一个字符生成Huffman编码  </span><br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">bob_sort</span><span class="hljs-params">(Hufnode data[], <span class="hljs-type">int</span> size)</span></span>;	<span class="hljs-comment">//优化过的冒泡排序  </span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>上述代码块展示的是 Huffman类的声明，声明的函数具体的实现自行完成。</p>
+<h3 id="压缩函数的实现"><a href="#压缩函数的实现" class="headerlink" title="压缩函数的实现"></a>压缩函数的实现</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">zip</span><span class="hljs-params">(<span class="hljs-type">char</span> *input, <span class="hljs-type">char</span> *output)</span></span>&#123;<br>	FILE *fp = <span class="hljs-literal">NULL</span>, *outfile = <span class="hljs-literal">NULL</span>;	<span class="hljs-comment">//文件输入和输出</span><br>    byte_fre array[<span class="hljs-number">256</span>];	<span class="hljs-comment">//用二进制方式读入文件，可以实现对所有格式文件兼容，开256个空间是因为只有256种不同的字节。</span><br>    Hufnode *data;		<span class="hljs-comment">//Huffman建树的临时缓冲区</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> char_temp = <span class="hljs-number">0</span>;	<span class="hljs-comment">//字节操作文件的缓冲区</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> code_len = <span class="hljs-number">0</span>;	<span class="hljs-comment">//记录文件长度</span><br>    data = <span class="hljs-keyword">new</span> Hufnode[<span class="hljs-number">256</span>];<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">256</span>; i++)<br>        array[i].data = i;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> buffer[MAX_LINE]; <span class="hljs-comment">// MAX_LINE 是一个宏定义，代表缓冲区的大小，此处为1024</span><br>    buffer[<span class="hljs-number">0</span>] = <span class="hljs-number">0</span>;<br><br></code></pre></td></tr></table></figure>
+<p>在上面初始化zip压缩函数，然后开始读入文件，求解统计整个文件不同字节权值。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">while</span> (!<span class="hljs-built_in">feof</span>(fp) &amp;&amp; <span class="hljs-built_in">fread</span>(buffer, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, fp))<br>&#123;<br>    <span class="hljs-type">int</span> a = buffer[<span class="hljs-number">0</span>];<br>    array[a].fre++;	<span class="hljs-comment">//统计不同的字节权值</span><br>    buffer[<span class="hljs-number">0</span>] = <span class="hljs-number">0</span>;<br>&#125;<br><br><span class="hljs-type">int</span> len = <span class="hljs-number">0</span>;<br><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">256</span>; i++) <span class="hljs-comment">//搜集权值用来构建hafuman树 </span><br>&#123;<br>    <span class="hljs-keyword">if</span> (array[i].fre &gt; <span class="hljs-number">0</span>)<br>    &#123;<br>        data[len].pow = array[i].fre;<br>        data[len].leaf = <span class="hljs-literal">true</span>;<br>        data[len++].Data = array[i].data;<br>    &#125;<br>&#125;<br>Hufman CODE;<br>CODE.<span class="hljs-built_in">build_huf</span>(data, len); <span class="hljs-comment">//此处调用hufman类里面的建树</span><br><br>len = <span class="hljs-number">0</span>;<br><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">256</span>; i++) <span class="hljs-comment">// 为了在元数据写入不同字节权重</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (array[i].fre &gt; <span class="hljs-number">0</span>)<br>    &#123;<br>        data[len].pow = array[i].fre;<br>        data[len].leaf = <span class="hljs-literal">true</span>;<br>        data[len++].Data = array[i].data;<br>    &#125;<br>&#125;<br><br>outfile = <span class="hljs-built_in">fopen</span>(output, <span class="hljs-string">&quot;wb+&quot;</span>);<br><span class="hljs-built_in">fwrite</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> *)&amp;len, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>), <span class="hljs-number">1</span>, outfile);<br><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; len; i++)<br>&#123;<br>    <span class="hljs-built_in">fwrite</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *)&amp;data[i].Data, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>), <span class="hljs-number">1</span>, outfile);<br>    <span class="hljs-built_in">fwrite</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> *)&amp;data[i].pow, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>), <span class="hljs-number">1</span>, outfile);<br>&#125;<br><br><span class="hljs-type">char</span> code_buf[<span class="hljs-number">256</span>] = <span class="hljs-string">&quot;\0&quot;</span>; <span class="hljs-comment">// </span><br><br><span class="hljs-built_in">rewind</span>(fp);<br><span class="hljs-type">int</span> file_len = CODE.<span class="hljs-built_in">pow_len</span>();<br><span class="hljs-built_in">fwrite</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> *)&amp;file_len, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>), <span class="hljs-number">1</span>, outfile); <span class="hljs-comment">// 读取文件的大小</span><br><span class="hljs-built_in">fread</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *)&amp;char_temp, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>), <span class="hljs-number">1</span>, fp);      <span class="hljs-comment">// 按照字节读取8个bit</span><br><span class="hljs-type">int</span> temp = <span class="hljs-number">0</span>;<br><span class="hljs-keyword">while</span> (!<span class="hljs-built_in">feof</span>(fp))<br>&#123;<br><br>    <span class="hljs-built_in">strcat</span>(code_buf, CODE.<span class="hljs-built_in">return_code</span>(char_temp).<span class="hljs-built_in">data</span>());<br><br>    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">strlen</span>(code_buf) &gt;= <span class="hljs-number">8</span>)<br>    &#123;<br>        char_temp = <span class="hljs-string">&#x27;\0&#x27;</span>;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">8</span>; ++i)<br>        &#123;<br>            char_temp &lt;&lt;= <span class="hljs-number">1</span>;<br>            <span class="hljs-keyword">if</span> (code_buf[i] == <span class="hljs-string">&#x27;1&#x27;</span>)<br>            &#123;<br>                char_temp |= <span class="hljs-number">1</span>;<br>            &#125;<br>        &#125;<br>        <span class="hljs-built_in">fwrite</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *)&amp;char_temp, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>), <span class="hljs-number">1</span>, outfile); <span class="hljs-comment">// 输出</span><br>        <span class="hljs-built_in">strcpy</span>(code_buf, code_buf + <span class="hljs-number">8</span>);<br>    &#125;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">feof</span>(fp))<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-built_in">fread</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *)&amp;char_temp, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>), <span class="hljs-number">1</span>, fp); <span class="hljs-comment">// 读入文件数据</span><br>&#125;<br><br><span class="hljs-comment">// 处理最后不足8位的情况</span><br>code_len = <span class="hljs-built_in">strlen</span>(code_buf);<br><span class="hljs-keyword">if</span> (code_len &gt; <span class="hljs-number">0</span>)<br>&#123;<br>    <span class="hljs-built_in">memset</span>(&amp;char_temp, <span class="hljs-number">0</span>, <span class="hljs-built_in">sizeof</span>(char_temp));<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; code_len; ++i)<br>    &#123;<br>        char_temp &lt;&lt;= <span class="hljs-number">1</span>;<br>        <span class="hljs-keyword">if</span> (code_buf[i] == <span class="hljs-string">&#x27;1&#x27;</span>)<br>            char_temp |= <span class="hljs-number">1</span>;<br>    &#125;<br>    char_temp &lt;&lt;= <span class="hljs-number">8</span> - code_len;                                            <span class="hljs-comment">// 移动到高位</span><br>    <span class="hljs-built_in">fwrite</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *)&amp;char_temp, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>), <span class="hljs-number">1</span>, outfile); <span class="hljs-comment">// </span><br>&#125;<br><span class="hljs-built_in">fclose</span>(fp);<br><span class="hljs-built_in">fclose</span>(outfile); <br><span class="hljs-keyword">delete</span>[] data;<br></code></pre></td></tr></table></figure>
+
+<h3 id="解压函数"><a href="#解压函数" class="headerlink" title="解压函数"></a>解压函数</h3><p>下面是需要使用的临时变量：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">unzip</span><span class="hljs-params">(<span class="hljs-type">char</span> *input, <span class="hljs-type">char</span> *output)</span></span>&#123;<br>	FILE *inputf=<span class="hljs-literal">NULL</span>, *outputf=<span class="hljs-literal">NULL</span>;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> len=<span class="hljs-number">0</span>;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> file_len=<span class="hljs-number">0</span>;	<span class="hljs-comment">//读入的文件大小</span><br>    Hufnode *root = <span class="hljs-literal">NULL</span>;	<span class="hljs-comment">//临时指针</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> node_num=<span class="hljs-number">0</span>;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> code_temp = <span class="hljs-number">0</span>; <span class="hljs-comment">// 缓冲区</span><br>    byte_fre array[<span class="hljs-number">256</span>];	<span class="hljs-comment">//统计权重</span><br>    inputf = <span class="hljs-built_in">fopen</span>(input, <span class="hljs-string">&quot;rb&quot;</span>);<br>    outputf = <span class="hljs-built_in">fopen</span>(output, <span class="hljs-string">&quot;wb+&quot;</span>);<br><br></code></pre></td></tr></table></figure>
+
+<p>然后是正式读取压缩的文件开始解压。（代码并没有验证解压文件是否是上述压缩算法生成的，而且是以字节流读取文件内容，所以任何文件都可以被这个函数读取并尝试解压）。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">if</span> (inputf == <span class="hljs-literal">NULL</span>)<br>        <span class="hljs-keyword">return</span>;<br>    <span class="hljs-built_in">fread</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *)&amp;len, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>), <span class="hljs-number">1</span>, inputf);	<span class="hljs-comment">//先读取字符种类</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i; i &lt; len; i++)<br>    &#123;<br>        <span class="hljs-built_in">fread</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *)&amp;array[i].data, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>), <span class="hljs-number">1</span>, inputf);<br>        <span class="hljs-built_in">fread</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> *)&amp;array[i].fre, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>), <span class="hljs-number">1</span>, inputf);<br>    &#125;<br>    Hufnode data[<span class="hljs-number">256</span>];<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; len; i++) <span class="hljs-comment">//collecting data to build huffman tree </span><br>    &#123;<br>        <span class="hljs-keyword">if</span> (array[i].fre &gt; <span class="hljs-number">0</span>)<br>        &#123;<br>            data[i].pow = array[i].fre;<br>            data[i].leaf = <span class="hljs-literal">true</span>;<br>            data[i].Data = array[i].data;<br>        &#125;<br>    &#125;<br>    Hufman CODE;<br>    CODE.<span class="hljs-built_in">build_huf</span>(data, len);	<span class="hljs-comment">//根据读入的字节权重重建huffman树</span><br><br>    <span class="hljs-built_in">fread</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *)&amp;file_len, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>), <span class="hljs-number">1</span>, inputf); <span class="hljs-comment">//读取文件大小</span><br>    root = CODE.<span class="hljs-built_in">return_root</span>();<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> writen_len = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>)<br>    &#123;<br>    <span class="hljs-built_in">fread</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *)&amp;code_temp, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>), <span class="hljs-number">1</span>, inputf); <span class="hljs-comment">//每次一个字节进行解压</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">8</span>; ++i)<br>        &#123;<br>            <span class="hljs-keyword">if</span> (code_temp &amp; <span class="hljs-number">128</span>)<br>                root = root-&gt;rc;<br>            <span class="hljs-keyword">else</span><br>                root = root-&gt;lc;<br><br>            <span class="hljs-keyword">if</span> (root-&gt;leaf == <span class="hljs-literal">true</span>)<br>            &#123;<br>                <span class="hljs-built_in">fwrite</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *)&amp;root-&gt;Data, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>), <span class="hljs-number">1</span>, outputf);<br>                ++writen_len;<br>                <span class="hljs-keyword">if</span> (writen_len &gt;= file_len)<br>                    <span class="hljs-keyword">break</span>;                 <span class="hljs-comment">// 跳出循环</span><br>                root = CODE.<span class="hljs-built_in">return_root</span>(); <span class="hljs-comment">// 恢复</span><br>            &#125;<br>            code_temp &lt;&lt;= <span class="hljs-number">1</span>; <span class="hljs-comment">// switch next bit to the highest</span><br>        &#125;<br>        <span class="hljs-keyword">if</span> (writen_len &gt;= file_len)<br>            <span class="hljs-keyword">break</span>;  <span class="hljs-comment">// 文件大小检测</span><br>    &#125;<br>    <span class="hljs-built_in">fread</span>((<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *)&amp;code_temp, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>), <span class="hljs-number">1</span>, inputf);<br><br>    <span class="hljs-comment">// close the file</span><br>    <span class="hljs-built_in">fclose</span>(inputf);<br>    <span class="hljs-built_in">fclose</span>(outputf);<br></code></pre></td></tr></table></figure>
+
+<h3 id="main部分"><a href="#main部分" class="headerlink" title="main部分"></a>main部分</h3><p>这个东西就是需要根据实际情况编写，此处不再粘贴完整的代码。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">char</span> input[<span class="hljs-number">100</span>] = &#123;<span class="hljs-number">0</span>&#125;, output[<span class="hljs-number">100</span>] = &#123;<span class="hljs-number">0</span>&#125;;<br>    <span class="hljs-type">int</span> opcode = <span class="hljs-number">-1</span>;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>)<br>    &#123;<br>        <span class="hljs-built_in">welcome</span>();<br>        cin &gt;&gt; opcode;<br>        <span class="hljs-keyword">switch</span> (opcode)<span class="hljs-comment">//three cases</span><br>        &#123;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>:<span class="hljs-comment">//zip</span><br>            cout &lt;&lt; <span class="hljs-string">&quot;Your file name of input&quot;</span> &lt;&lt; endl;<br>            cin &gt;&gt; input;<br>            <span class="hljs-keyword">while</span> (<span class="hljs-built_in">file_name</span>(input) == <span class="hljs-literal">false</span>)<br>            &#123;<br>                cin &gt;&gt; input;<br>                <span class="hljs-keyword">if</span> (input[<span class="hljs-number">0</span>] == <span class="hljs-string">&#x27;0&#x27;</span> &amp;&amp; input[<span class="hljs-number">1</span>] == <span class="hljs-number">0</span>)<br>                &#123;<br>                    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>                &#125;<br>            &#125;<br>            cout &lt;&lt; <span class="hljs-string">&quot;Your file name of output&quot;</span> &lt;&lt; endl;<br>            cin &gt;&gt; output;<br>            <span class="hljs-built_in">zip</span>(input, output);<br>            cout &lt;&lt; <span class="hljs-string">&quot;Zip behaviour is complete&quot;</span> &lt;&lt; endl<br>                 &lt;&lt; endl;<br>            <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>:<span class="hljs-comment">//unzip</span><br>            cout &lt;&lt; <span class="hljs-string">&quot;Your file name of input&quot;</span> &lt;&lt; endl;<br>            cin &gt;&gt; input;<br>            <span class="hljs-keyword">while</span> (<span class="hljs-built_in">file_name</span>(input) == <span class="hljs-literal">false</span>)<br>            &#123;<br>                cin &gt;&gt; input;<br>                <span class="hljs-keyword">if</span> (input[<span class="hljs-number">0</span>] == <span class="hljs-string">&#x27;0&#x27;</span> &amp;&amp; input[<span class="hljs-number">1</span>] == <span class="hljs-number">0</span>)<br>                &#123;<br>                    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>                &#125;<br>            &#125;<br>            cout &lt;&lt; <span class="hljs-string">&quot;Your file name of output&quot;</span> &lt;&lt; endl;<br>            cin &gt;&gt; output;<br>            <span class="hljs-built_in">unzip</span>(input, output);<br>            cout &lt;&lt; <span class="hljs-string">&quot;Unzip behaviour is complete&quot;</span> &lt;&lt; endl<br>                 &lt;&lt; endl;<br>            <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>:<span class="hljs-comment">//exit</span><br>            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>            <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">default</span>:<br>            cout &lt;&lt; <span class="hljs-string">&quot;Your Input is not allowed&quot;</span> &lt;&lt; endl;<br>            <span class="hljs-keyword">break</span>;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h3 id="目前的问题"><a href="#目前的问题" class="headerlink" title="目前的问题"></a>目前的问题</h3><p>在代码注释中提及过，解压缩是不能够验证压缩的文件是否是Huffman压缩算法生成的，如果直接解压一个正常的文件，会解压出来一个压缩炸弹或者一个啥也没有。与之配套的压缩算法中也没有加入相应的验证程序。没有对单一字节类型进行特化处理，比如说，压缩一个文本全部是“a”的文本文件会丢失数据，因为在建立哈夫曼树的时候没有特化考虑只有一种字节类型的情况，之后修改加入。</p>
+<h3 id="没了"><a href="#没了" class="headerlink" title="没了"></a>没了</h3><p>作下此文，只是记一次被迫从零开始完成一个数据结构作业，~<br>diss一下qhy。应该不会有人认出来吧。如果恰巧也是这个老师教学的，~</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%AD%A6%E4%B9%A0/" class="print-no-link">#学习</a>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" class="print-no-link">#数据结构</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>[学习]huffman压缩</div>
+      <div>http://example.com/2020/11/01/学习-huffman/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>peach-water</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>November 1, 2020</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/12/07/%E5%AD%A6%E4%B9%A0-dijkstra/" title="[学习]广州地铁线路规划大作业">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[学习]广州地铁线路规划大作业</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

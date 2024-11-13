@@ -1,0 +1,715 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="peach-water">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="前言 最好全程科学上网，预计需要5~7GB的下载量。本教程尝试在 Windows 的 Docker 环境下编译给 Ubuntu20.04 的 torch&#x3D;2.3.0 CUDA11.7 。（至于为什么是这个详见LLM在CUDA11.7安装经历）  零、准备工作 ⚠⚠⚠记住一定要先检查目标机器是否有NVIDIA驱动和CUDA环境，CUDNN最好也检查一下，否则编译好了在那边也装不上。   从">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[折腾]编译pytorch">
+<meta property="og:url" content="http://example.com/2024/09/18/%E6%8A%98%E8%85%BE-%E7%BC%96%E8%AF%91pytorch/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="前言 最好全程科学上网，预计需要5~7GB的下载量。本教程尝试在 Windows 的 Docker 环境下编译给 Ubuntu20.04 的 torch&#x3D;2.3.0 CUDA11.7 。（至于为什么是这个详见LLM在CUDA11.7安装经历）  零、准备工作 ⚠⚠⚠记住一定要先检查目标机器是否有NVIDIA驱动和CUDA环境，CUDNN最好也检查一下，否则编译好了在那边也装不上。   从">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2024/09/18/%E6%8A%98%E8%85%BE-%E7%BC%96%E8%AF%91pytorch/5ac1836c-f60d-49e8-beca-c0d1cbe36316.png">
+<meta property="article:published_time" content="2024-09-18T05:24:19.000Z">
+<meta property="article:modified_time" content="2024-11-13T06:13:31.545Z">
+<meta property="article:author" content="peach-water">
+<meta property="article:tag" content="折腾">
+<meta property="article:tag" content="pytorch">
+<meta property="article:tag" content="编译">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2024/09/18/%E6%8A%98%E8%85%BE-%E7%BC%96%E8%AF%91pytorch/5ac1836c-f60d-49e8-beca-c0d1cbe36316.png">
+  
+  
+  
+  <title>[折腾]编译pytorch - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="[折腾]编译pytorch"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-09-18 13:24" pubdate>
+          September 18, 2024 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.4k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          21 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">[折腾]编译pytorch</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><blockquote>
+<p>最好全程科学上网，预计需要5~7GB的下载量。<br>本教程尝试在 Windows 的 Docker 环境下编译给 Ubuntu20.04 的 torch&#x3D;2.3.0 CUDA11.7 。（至于为什么是这个详见LLM在CUDA11.7安装经历）</p>
+</blockquote>
+<h1 id="零、准备工作"><a href="#零、准备工作" class="headerlink" title="零、准备工作"></a>零、准备工作</h1><blockquote>
+<p>⚠⚠⚠记住一定要先检查目标机器是否有NVIDIA驱动和CUDA环境，CUDNN最好也检查一下，否则编译好了在那边也装不上。</p>
+</blockquote>
+<ol>
+<li>从<a target="_blank" rel="noopener" href="https://github.com/pytorch/pytorch">github&#x2F;pytorch</a>处获得最新的pytorch源代码，之后的命令执行是参考<code>DockerFile</code>来编写的。</li>
+<li>从<code>NVIDIA CUDA 11.7</code>处获得 11.7 CUDA 的toolkit包。在开始前需要下载这个文件。</li>
+<li>基础镜像参考<code>Dockerfile</code>使用的是<code>Ubuntu:22.04</code>（MD从头开始还不如直接下一个 CUDA 11.7 的镜像，记住要使用和目标计算机一样的环境，例如本次使用<code>Ubuntu:20.04</code>）也需要提前安装完毕。</li>
+<li>仔细观察目标环境的配置，包括但不限于CUDA安装位置、CUDNN头文件位置、安装Python等等，需要在容器中复现。</li>
+</ol>
+<h1 id="一、开始编译"><a href="#一、开始编译" class="headerlink" title="一、开始编译"></a>一、开始编译</h1><h2 id="1、配置docker"><a href="#1、配置docker" class="headerlink" title="1、配置docker"></a>1、配置docker</h2><p>建议使用以下命令启动<code>ubuntu:22.04</code>镜像，默认的内存空间可能不够用，需要额外扩充一部分swap空间。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">docker run --name torch_compile --privileged -it ubuntu:20.04 /bin/bash<br></code></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">docker run -it –cap-add SYS_ADMIN ubuntu:20.04 /bin/bash<br></code></pre></td></tr></table></figure>
+<p>进入<code>ubuntu:22.04</code>后第一件事情是更新环境，安装必备工具（最好科学上网）。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> apt-get update &amp;&amp; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \<br>        build-essential \<br>        ca-certificates \<br>        ccache \<br>        cmake \<br>        curl \<br>        git \<br>        wget \<br>        libjpeg-dev \<br>        libpng-dev &amp;&amp; \<br>    <span class="hljs-built_in">rm</span> -rf /var/lib/apt/lists/*<br></code></pre></td></tr></table></figure>
+<p>另外建议先安装 <font color="#ff0000">NVIDIA CUDA 11.7 toolkit</font> 。</p>
+<h2 id="2、安装python环境"><a href="#2、安装python环境" class="headerlink" title="2、安装python环境"></a>2、安装python环境</h2><p>指定一些运行变量，下载 Miniconda 包安装 Python 环境。Python和目标机器上的一致（这里因为目标机器上的Python是3.11版本的，这里指定<code>PYTHON_VERSION</code>为3.11）。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">/usr/sbin/update-ccache-symlinks<br><span class="hljs-built_in">mkdir</span> /opt/ccache &amp;&amp; ccache --set-config=cache_dir=/opt/ccache<br><span class="hljs-built_in">export</span> PATH=/opt/conda/bin:<span class="hljs-variable">$PATH</span><br><span class="hljs-built_in">export</span> PYTHON_VERSION=3.11<br><span class="hljs-built_in">export</span> MINICONDA_ARCH=x86_64<br>curl -fsSL -v -o ~/miniconda.sh -O  <span class="hljs-string">&quot;https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-<span class="hljs-variable">$&#123;MINICONDA_ARCH&#125;</span>.sh&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>找到<a target="_blank" rel="noopener" href="https://github.com/pytorch/pytorch">github&#x2F;pytorch</a>文件夹中的<code>requirements.txt</code>文件。并复制到docker中存放pytorch源码的文件夹下。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cp</span> [path-to-pytorch-source-code]/requirements.txt .<br></code></pre></td></tr></table></figure>
+
+<p>然后执行 python 环境的安装，这里就安装到<code>/opt/conda</code>这个位置了，添加环境变量以保证conda命令的正确识别。不建议改动安装位置，因为本教程之后许多指令基于这个安装位置编写。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">chmod</span> +x ~/miniconda.sh &amp;&amp; \<br>    bash ~/miniconda.sh -b -p /opt/conda &amp;&amp; \<br>    /opt/conda/bin/conda install -y python=<span class="hljs-variable">$&#123;PYTHON_VERSION&#125;</span> cmake conda-build pyyaml numpy ipython &amp;&amp; \<br>    /opt/conda/bin/python -mpip install -r requirements.txt &amp;&amp; \<br>    /opt/conda/bin/conda clean -ya<br><span class="hljs-built_in">export</span> PATH=/opt/conda/bin:<span class="hljs-variable">$PATH</span><br><span class="hljs-comment"># conda install mkl</span><br><span class="hljs-comment"># conda install mkl-include</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="3、补齐代码"><a href="#3、补齐代码" class="headerlink" title="3、补齐代码"></a>3、补齐代码</h2><p>下载下来的pytorch源码仅包含pytorch，而pytorch自己的依赖还需要二次下载。<br>把<code>github/pytorch</code>所有文件下载到&#x2F;opt&#x2F;pytorch这个位置，最好使用 <code>git</code> 命令来获得，直接下载获得的包缺少第三方库，需要使用以下命令进行库文件的补齐。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cd</span> /opt<br>git <span class="hljs-built_in">clone</span> https://github.com/pytorch/pytorch.git<br><span class="hljs-built_in">cd</span> /opt/pytorch<br>git checkout v2.3.0<br>git submodule update --init --recursive<br></code></pre></td></tr></table></figure>
+<p>建议多次执行，以确保所有的库都能下载下来。如果编译时报库文件的错，需要删掉整个对应的库文件，重新下载。</p>
+<h2 id="4、设置编译参数"><a href="#4、设置编译参数" class="headerlink" title="4、设置编译参数"></a>4、设置编译参数</h2><p><code>PYTHON_VERSION</code>很好理解，目标机器上安装什么版本的python就指定什么。<code>CUDA_VERSION</code>根据目标机器上实际的CUDA版本决定（机器上只有CUDA11.7）。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">export</span> PYTHON_VERSION=3.11<br><span class="hljs-built_in">export</span> CUDA_VERSION=11.7<br><span class="hljs-built_in">export</span> CUDA_CHANNEL=nvidia<br><span class="hljs-built_in">export</span> INSTALL_CHANNEL=pytorch-nightly<br><span class="hljs-comment"># Automatically set by buildx</span><br>/opt/conda/bin/conda update -y -n base -c defaults conda<br><span class="hljs-comment">#/opt/conda/bin/conda install -c &quot;$&#123;INSTALL_CHANNEL&#125;&quot; -y python=$&#123;PYTHON_VERSION&#125;</span><br><span class="hljs-comment">#/opt/conda/bin/conda install -c &quot;$&#123;INSTALL_CHANNEL&#125;&quot; -c &quot;$&#123;CUDA_CHANNEL&#125;&quot; -y &quot;python=$&#123;PYTHON_VERSION&#125;&quot; pytorch torchvision torchaudio &quot;pytorch-cuda=$(echo $CUDA_VERSION | cut -d&#x27;.&#x27; -f 1-2)&quot;</span><br>/opt/conda/bin/conda clean -ya<br></code></pre></td></tr></table></figure>
+<p>编译，具体有哪些参数可选可以检查 <code>setup.py</code> 文件，另外以下代码中的<code>CUDA_HOME</code>变量需要自行确定。</p>
+<blockquote>
+<p>⚠在执行下面命令前先检查<a href="#%E4%BA%8Cgpu%E4%BD%BF%E7%94%A8">GPU使用章节</a>是否正确安装。<br>⚠编译过程需要较多内存空间，提前分配较大的swap空间或者加上<code>MAX_JOBS=1</code>来限制同时编译的数量防止OOM错误。但是会显著降低编译速度，如果内存够大，建议按照CPU核心数量来设置。<br>⚠正式开始编译前最好检查一次生成的编译配置，是否正确开启了 <code>USE_CUDA</code></p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cd</span> /opt/pytorch<br>make triton<br><span class="hljs-built_in">export</span> USE_CUDA=ON<br><span class="hljs-built_in">export</span> PYTORCH_BUILD_NUMBER=2.3.0<br><span class="hljs-built_in">export</span> USE_NUMPY=ON<br><span class="hljs-built_in">export</span> USE_QNNPACK=ON<br><span class="hljs-built_in">export</span> USE_NNPACK=ON<br><span class="hljs-built_in">export</span> USE_DISTRIBUTED=ON<br><span class="hljs-built_in">export</span> BLAS=MKL <span class="hljs-comment"># 出现 mkl_gemm_bf16bf16f32: ATen not compiled with MKL support 问题</span><br><span class="hljs-built_in">export</span> USE_CUDNN=OFF  <span class="hljs-comment"># 超算中心没有（我TM……）一定要注意，有CUDA不等于有CUDNN</span><br><span class="hljs-comment"># TORCH_CUDA_ARCH_LIST=&quot;7.0 7.2 7.5 8.0 8.6 8.7 8.9 9.0 9.0a&quot; TORCH_NVCC_FLAGS=&quot;-Xfatbin -compress-all&quot; CMAKE_PREFIX_PATH=&quot;/opt/conda/bin&quot;   USE_MPI=1 USE_OPENMP=1 USE_FLASH_ATTENTION=1 USE_LMDB=1 PYTORCH_BUILD_NUMBER=2.3.0 CUDA_HOME= </span><br>python setup.py bdist_wheel<br></code></pre></td></tr></table></figure>
+
+<p>然后可以在<code>/opt/pytorch/dist</code>目录下找到刚刚编译好的可以直接安装的模块。<br>安装后执行下面的指令可以检查torch是否支持调用CUDA</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">python -c <span class="hljs-string">&#x27;import torch ; print(torch.cuda._is_compiled())&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="二、GPU使用"><a href="#二、GPU使用" class="headerlink" title="二、GPU使用"></a>二、GPU使用</h1><p>❗以下指令均需要root权限，如果是docker环境可以无视。<br>忽然发现运行从<a target="_blank" rel="noopener" href="https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04&target_type=runfile_local">NVIDIA CUDA 11.7</a>这里获得的包时，不需要安装 Driver 可以直接安装 toolkit ，反正只是跑编译而已，那么有没有 Driver 都无所谓了。<del>（亏我还搞了好久弄 WSL 安装 NVIDIA Driver，艹）</del></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">chmod</span> +x cuda_11.7.0_515.43.04_linux.run<br>sh cuda_11.7.0_515.43.04_linux.run <br></code></pre></td></tr></table></figure>
+<p>当你看到下面的内容时，说明 CUDA 已经安装完毕，需要向<code>PATH</code>变量加入cuda的可执行文件位置，以及lib位置。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs bash">root@2345f5f46b09:~# sh cuda_11.7.0_515.43.04_linux.run<br>===========<br>= Summary =<br>===========<br><br>Driver:   Not Selected<br>Toolkit:  Installed <span class="hljs-keyword">in</span> /usr/local/cuda-11.7/<br><br>Please make sure that<br> -   PATH includes /usr/local/cuda-11.7/bin<br> -   LD_LIBRARY_PATH includes /usr/local/cuda-11.7/lib64, or, add /usr/local/cuda-11.7/lib64 to /etc/ld.so.conf and run ldconfig as root<br><br>To uninstall the CUDA Toolkit, run cuda-uninstaller <span class="hljs-keyword">in</span> /usr/local/cuda-11.7/bin<br>***WARNING: Incomplete installation! This installation did not install the CUDA Driver. A driver of version at least 515.00 is required <span class="hljs-keyword">for</span> CUDA 11.7 functionality to work.<br>To install the driver using this installer, run the following <span class="hljs-built_in">command</span>, replacing &lt;CudaInstaller&gt; with the name of this run file:<br>    <span class="hljs-built_in">sudo</span> &lt;CudaInstaller&gt;.run --silent --driver<br><br>Logfile is /var/log/cuda-installer.log<br></code></pre></td></tr></table></figure>
+<p>⚠注意这里只安装了CUDA，没有<code>CUDNN</code>，仍然需要到<a target="_blank" rel="noopener" href="https://developer.nvidia.com/cudnn">CUDNN</a>这里下载相关文件，或者使用指令。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash">wget https://developer.download.nvidia.com/compute/cudnn/9.2.1/local_installers/cudnn-local-repo-ubuntu2204-9.2.1_1.0-1_amd64.deb<br>dpkg -i cudnn-local-repo-ubuntu2204-9.2.1_1.0-1_amd64.deb<br>apt-get update<br><span class="hljs-comment"># 然后根据CUDA11还是CUDA12按照需求运行下面的指令，个人实际测试发现 dpkg 之后cudnn就能找到了</span><br>apt install cudnn-cuda-11<br><span class="hljs-comment"># 或者</span><br>apt install cudnn-cuda-12<br></code></pre></td></tr></table></figure>
+<p>随后利用以下指令可以检查cudnn是否成功安装。看到下图所示说明CUDNN好了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cat</span> /usr/include/cudnn_version.h | grep CUDNN_MAJOR -A 2<br></code></pre></td></tr></table></figure>
+<p><img src="/2024/09/18/%E6%8A%98%E8%85%BE-%E7%BC%96%E8%AF%91pytorch/5ac1836c-f60d-49e8-beca-c0d1cbe36316.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="三、tmux多终端工具使用"><a href="#三、tmux多终端工具使用" class="headerlink" title="三、tmux多终端工具使用"></a>三、tmux多终端工具使用</h1><p>在此期间会打开许多窗口用于编译和测试，在本地多开终端不仅十分繁琐，而且会忘记每个终端的功能，且不能充分利用现有终端的空间。因此<code>tmux</code>工具应运而生，这里简要介绍一部分其中的快捷键，足以应付本场景。<br>使用以下指令创建一个<code>tmux</code>终端服务。指定名字不仅容易复现，而且方便日后恢复工作台。这里因为我们是编译pytorch，所以取名为“torch”。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">tmux new -s torch<br></code></pre></td></tr></table></figure>
+<p>简要介绍一下一些基础快捷键（⚠在进入tmux终端后才有效）</p>
+<ol>
+<li><code>Ctrl</code>+<code>B</code>，<code>&quot;</code>是垂直分割当前终端。</li>
+<li><code>Ctrl</code>+<code>B</code>，<code>%</code>是水平分割当前终端。</li>
+<li><code>Ctrl</code>+<code>B</code>，<code>x</code>是关闭当前光标所在终端。</li>
+<li><code>Ctrl</code>+<code>B</code>，<code>d</code>是离开当前终端，日后可以利用名字回到工作台。</li>
+<li><code>Ctrl</code>+<code>B</code>，任意方向键切换激活的终端。<br>离开后可以使用以下指令重新连接回当前终端。<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">tmux attach-sesstion -t torch<br></code></pre></td></tr></table></figure></li>
+</ol>
+<h1 id="四、错误解决"><a href="#四、错误解决" class="headerlink" title="四、错误解决"></a>四、错误解决</h1><h2 id="1、c-fatal-error-Killed-signal-terminated-program-cc1plus"><a href="#1、c-fatal-error-Killed-signal-terminated-program-cc1plus" class="headerlink" title="1、c++: fatal error: Killed signal terminated program cc1plus"></a>1、c++: fatal error: Killed signal terminated program cc1plus</h2><p>这是因为编译过程中出现内存不足导致的。</p>
+<h3 id="a、方案一"><a href="#a、方案一" class="headerlink" title="a、方案一"></a>a、方案一</h3><p>临时扩充虚拟内存，可以按照下面的步骤进行扩充（以下均指令需要sudo权限，而且如果不按照<a href="#1%E9%85%8D%E7%BD%AEdocker">配置docker</a>章节来，到这里就无法扩充虚拟内存）。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">mkdir</span> -p /var/cache/swap/<br><span class="hljs-comment"># 这里的含义是swap空间大小等于 bs*count=4GB 需要自行修改</span><br><span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=/dev/zero of=/var/cache/swap/swap0 bs=64M count=64<br><span class="hljs-built_in">chmod</span> 0600 /var/cache/swap/swap0<br>mkswap /var/cache/swap/swap0<br>swapon /var/cache/swap/swap0<br></code></pre></td></tr></table></figure>
+<p>如果执行第6条指令发生如下错误，需要检查启动镜像是否以特权模式运行容器。如果不是，请使用<code>方案二</code>，或者重新开始配置。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">swapon failed: Operation not permitted<br></code></pre></td></tr></table></figure>
+<p>最后执行以下指令能看到自己添加的新 swap 分区即可</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">swapon -s<br></code></pre></td></tr></table></figure>
+
+<h3 id="b、方案二"><a href="#b、方案二" class="headerlink" title="b、方案二"></a>b、方案二</h3><p>设置同时编译的线程数量，最好预留每个编译线程2GB的内存空间。自行调整<code>MAX_JOBS</code>后的数字。如果开启 CUDA 编译需要每个线程预留 4~6GB 的内存空间。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">export</span> MAX_JOBS=2<br>python setup.py bdist_wheel<br></code></pre></td></tr></table></figure>
+
+<h2 id="2、ValueError-could-not-identify-license-file-for-third-party-opentelemetry-cpp-tools-vcpkg-ports-sigslot"><a href="#2、ValueError-could-not-identify-license-file-for-third-party-opentelemetry-cpp-tools-vcpkg-ports-sigslot" class="headerlink" title="2、ValueError: could not identify license file for third_party&#x2F;opentelemetry-cpp&#x2F;tools&#x2F;vcpkg&#x2F;ports&#x2F;sigslot"></a>2、ValueError: could not identify license file for third_party&#x2F;opentelemetry-cpp&#x2F;tools&#x2F;vcpkg&#x2F;ports&#x2F;sigslot</h2><p>出现这个错误是因为 third_party 出现了不该出现的第三方依赖。检查是否在第三步git checkout命令之前运行了git submodule。用以下命令解决冲突问题</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">git checkout -f v2.3.0<br><span class="hljs-built_in">rm</span> [出现错误的文件夹]<br></code></pre></td></tr></table></figure>
+
+<h2 id="3、Import-Error-…-libstdc-so-6-version-‘GLIBCXX-3-4-30’-not-found"><a href="#3、Import-Error-…-libstdc-so-6-version-‘GLIBCXX-3-4-30’-not-found" class="headerlink" title="3、Import Error: …&#x2F;libstdc++.so.6: version ‘GLIBCXX_3.4.30’ not found"></a>3、Import Error: …&#x2F;libstdc++.so.6: version ‘GLIBCXX_3.4.30’ not found</h2><p>来自conda的错误，一般是因为conda安装目录下的<code>libstdc++.so.6</code>没有这个标记。可以先用下面的指令检查内核版本是否有这个标记，然后再考虑是否升级内核。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep GLIBCXX<br></code></pre></td></tr></table></figure>
+<p>这里我很幸运的发现<code>GLIBCXX_3.4.30</code>存在，不用更新内核了。下一步就是更新conda的<code>libstdc++.so.6</code>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cd</span> [path to your conda]/lib<br><span class="hljs-comment"># 备份原始文件</span><br><span class="hljs-built_in">mv</span> libstdc++.so.6 libstdc++.so.6.old<br><span class="hljs-comment"># 创建新的软链接</span><br><span class="hljs-built_in">ln</span> -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6 libstdc++.so.6<br></code></pre></td></tr></table></figure>
+
+<h2 id="4、ImportError-cannot-import-name-‘version‘-from-‘torchvision’"><a href="#4、ImportError-cannot-import-name-‘version‘-from-‘torchvision’" class="headerlink" title="4、ImportError: cannot import name ‘version‘ from ‘torchvision’"></a>4、ImportError: cannot import name ‘<strong>version</strong>‘ from ‘torchvision’</h2><p>问题原因：似乎是自己编译的torchvision就是有这个bug，安装目录下没有<code>version.py</code>这个文件。<br>解决方法：进入<code>anaconda/envs/[your env]/lib/[python3.10]/site-pages/torchvision</code>下创建文件<code>version.py</code>文件，然后写入一下的示例。⚠具体数值应该和你编译的版本一致。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs python">__version__ = <span class="hljs-string">&#x27;0.18.0+cpu&#x27;</span><br></code></pre></td></tr></table></figure>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%8A%98%E8%85%BE/" class="print-no-link">#折腾</a>
+      
+        <a href="/tags/pytorch/" class="print-no-link">#pytorch</a>
+      
+        <a href="/tags/%E7%BC%96%E8%AF%91/" class="print-no-link">#编译</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>[折腾]编译pytorch</div>
+      <div>http://example.com/2024/09/18/折腾-编译pytorch/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>peach-water</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>September 18, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/" title="[学习]C++性能分析实战">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[学习]C++性能分析实战</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/09/12/%E6%8A%98%E8%85%BE-%E5%AE%89%E8%A3%85pyrealsense/" title="[折腾]安装pyrealsense">
+                        <span class="hidden-mobile">[折腾]安装pyrealsense</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
