@@ -4,7 +4,7 @@
   
   
   <entry>
-    <title>搞笑-牛马表</title>
+    <title>[搞笑]-牛马表</title>
     <link href="/2025/04/25/%E6%90%9E%E7%AC%91-%E7%89%9B%E9%A9%AC%E8%A1%A8/"/>
     <url>/2025/04/25/%E6%90%9E%E7%AC%91-%E7%89%9B%E9%A9%AC%E8%A1%A8/</url>
     
@@ -23,11 +23,11 @@
   
   
   <entry>
-    <title>折腾-Anything+Ollama部署自己的大模型</title>
+    <title>[折腾]-Anything+Ollama部署自己的大模型</title>
     <link href="/2025/01/09/%E6%8A%98%E8%85%BE-Anything-Ollama%E9%83%A8%E7%BD%B2%E8%87%AA%E5%B7%B1%E7%9A%84%E5%A4%A7%E6%A8%A1%E5%9E%8B/"/>
     <url>/2025/01/09/%E6%8A%98%E8%85%BE-Anything-Ollama%E9%83%A8%E7%BD%B2%E8%87%AA%E5%B7%B1%E7%9A%84%E5%A4%A7%E6%A8%A1%E5%9E%8B/</url>
     
-    <content type="html"><![CDATA[<p>本文记录在本地利用Ollama后端和AnythingLLM前端，部署自己私有化大模型的过程，方便日后查找。<br>采用docker镜像安装的形式，方便管理和版本更新。</p><h1 id="一、环境安装"><a href="#一、环境安装" class="headerlink" title="一、环境安装"></a>一、环境安装</h1><p>利用以下指令</p>]]></content>
+    <content type="html"><![CDATA[<p>本文记录在本地利用Ollama后端和AnythingLLM前端，部署自己私有化大模型的过程，方便日后查找。<br>采用docker镜像安装的形式，方便管理和版本更新。</p><h1 id="一、前期准备"><a href="#一、前期准备" class="headerlink" title="一、前期准备"></a>一、前期准备</h1><blockquote><p>确保主机上安装有docker，且能正常访问docker hub官网（或者自行更改镜像源使用国内镜像站）。<br><a href="https://github.com/brittlewis12/autogguf">Autogguf</a>是写文档时使用的safetensor转gguf工具。工具有可能长久没有更新，不保证在工具之后的大模型可以被工具正确转换。</p></blockquote><p>从docker hub处获得<code>ollama</code>和<code>anythingllm</code>的最新版本镜像。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker pull ollama/ollama:latest<br>docker pull minplexlabs/anythingllm:latest<br></code></pre></td></tr></table></figure><p>有些时候，主机是<del>实验室服务器</del>不太可能能直连外网，需要用自己的机器先下载好相关的镜像再上传。这里记录docker导出和导入镜像的两种方式。</p><h2 id="1、镜像迁移"><a href="#1、镜像迁移" class="headerlink" title="1、镜像迁移"></a>1、镜像迁移</h2><p>docker有两组指令用于容器与镜像的迁移工作，其中<code>export</code>和<code>import</code>用于容器的导出与加载，<code>save</code>和<code>load</code>用于镜像的导出与价值，<strong>注意不要混用两组指令</strong>。<br>这里我们只是用自己的机器下载了镜像，没有对原始镜像做修改，因此使用<code>save</code>和<code>load</code>命令组。下面的<code>[image ID]</code>自行修改为实际ID，<code>[XXX]</code>修改为任意名字均可。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker save [image ID] -o [XXX].tar<br>或者<br>docker save [image ID] &gt; [XXX].tar<br></code></pre></td></tr></table></figure><p>利用各种工具上传到服务器上后，利用<code>load</code>指令加载镜像。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker load -i [XXX].tar<br>或者<br>docker load &lt; [XXX].tar<br></code></pre></td></tr></table></figure><blockquote><p>注意，load的镜像是没有对应的tag和repository名，需要手动重新指定。导入镜像时最好同时指定镜像名字，将来便于进行镜像的管理。</p></blockquote><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker tag [image ID] ollama/ollama:latest<br></code></pre></td></tr></table></figure><h1 id="二、启动镜像"><a href="#二、启动镜像" class="headerlink" title="二、启动镜像"></a>二、启动镜像</h1><p>anythingllm启动镜像，注意对于<code>STORAGE_LOCATION</code>变量的赋值，将来的聊天记录以及设置等等配置文件均会存放在宿主机的这个目录下。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">export STORAGE_LOCATION=$HOME/anythingllm<br>mkdir -p $STORAGE_LOCATION<br>touch &quot;$STORAGE_LOCATION/.env&quot;<br>docker run -d -p 3001:3001 --cap-add SYS_ADMIN -v $&#123;STORAGE_LOCATION&#125;:/app/server/storage -v $&#123;STORAGE_LOCATION&#125;/.env:app/server/.env -e STORAGE_DIR=&quot;/app/server/storage&quot; mintplexlabs/anything<br></code></pre></td></tr></table></figure><p>ollama启动镜像，注意<code>-v</code>参数后面的<code>$HOME/ollama</code>指定宿主机模型文件存放位置，<code>/root/ollama</code>是映射到容器内部的位置，稍后在这个目录下找到宿主机存放的模型文件。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run -d -v $HOME/ollama:/root/ollama -p 11434:11434 --name ollama ollama/ollama:latest<br></code></pre></td></tr></table></figure><h1 id="三、转化模型"><a href="#三、转化模型" class="headerlink" title="三、转化模型"></a>三、转化模型</h1><blockquote><p>Ollama使用onnx作为大模型推理后端，使用的模型文件格式为onnx定义的<code>gguf</code>格式。一般从HuggingFace或者其他地方下载的是<code>safetensor</code>或者<code>pt</code>的pytorch保存格式。需要经过转化后才能正常使用。</p><ul><li>选择已经量化好的模型下载也是一种途径。</li><li>其中使用ollama提供的指令来部署模型也是一种方案。优点是不需要自己去折腾模型格式转化的问题；缺点是个性化程度低。</li></ul></blockquote><p>这里选择<code>Qwen2.5</code>作为示例，主要是因为Qwen在阿里自家的<a href="https://www.modelscope.cn/">modelscope（魔搭）</a>社区上有全套，且服务器在国内，容易下载。<br><del>本文找到魔搭一个用户，他制作一系列Qwen2.5的GGUF优化模型。并从中选择7B-GGUF-V3-LOT格式。</del>文章很早开始写，但是写到一半发现新发布的deepseek火遍全球，这里火速改成<a href="https://www.modelscope.cn/models/unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF">deepseek蒸馏的Qwen</a>作为教程。<br>打开链接会发现里面包含多个模型，这里简单介绍一下各个后缀的量化含义。首先模型的名字<code>DeepSeek-R1-Distill-Qwen-7B</code>，然后是字母数字和下划线构成的后缀。<br>后缀遵循特定的命名约定：“Q”+权重的精度（bit位数）+特定量化变体。以下举例各种后缀代表的含义。来源<a href="https://github.com/ggerganov/ggml/blob/master/docs/gguf.md">llama.cpp</a>。</p><ul><li>定义基础量化后缀<ul><li>F32：权重为32位浮点数</li><li>F16：权重为16位浮点数</li><li>Q4_0：代表第0种类型的4位量化，$w&#x3D;d*q$，其中$d$是缩放因子。</li><li>Q4_1：代表第1种类型的4位量化，$w&#x3D;d*q+m$，其中$d$是缩放因子，$m$是一个量化块中最小的数字。</li></ul></li><li>基于以上基础后缀组合<ul><li>K系列后缀<ul><li>二重量化基础说明<ul><li>Q2_K：（1类型）对包含16个量化块的超级块进行2bit量化，每个量化块包含16个权重，块的$q$和$m$则是4bit。平均<code>2.5625</code>bit每个权重参数。</li><li>Q3_K：（0类型）对包含16个量化块的超级块进行3bit量化，每个量化块包含16个权重，块的$q$则是6bit。平均<code>3.4375</code>bit每个权重参数。</li><li>Q4_K：（1类型）对包含8个量化块的超级块进行4bit量化，每个量化块包含32个权重，块的$q$和$m$则是6bit。平均<code>4.5</code>bit每个权重参数。</li><li>Q5_K：（1类型）类似<code>Q4_K</code>，平均<code>5.5</code>bit每个权重参数。</li><li>Q6_K：（0类型）对包含16个量化块的超级块进行6bit量化，每个量化块包含16个权重，块的$q$则是8bit。平均<code>6.5625</code>bit每个权重参数。</li><li>Q8_K：（0类型）相比<code>Q8_0</code>量化，块大小变成256，且所有的点积结果都被量化到2-6bit。</li></ul></li><li>基于K系列后缀的混合量化说明<a href="https://github.com/ggerganov/llama.cpp/pull/1684">issue1684</a><ul><li>LLM-Q2_K：用<code>Q4_K</code>量化<code>attention.wv</code>和<code>feed_forward.w2</code>，其余部分用<code>Q2_K</code>进行量化。</li><li>LLM-Q3_K_S：使用<code>Q3_K</code>量化所有张量。</li><li>LLM-Q3_K_M：用<code>Q4_K</code>量化<code>attention.wv</code>，<code>attention.wo</code>和<code>feed_forward.w2</code>，其余部分用<code>Q3_K</code>量化。</li><li>LLM-Q3_K_L：用<code>Q5_K</code>量化<code>attention.wv</code>，<code>attention.wo</code>和<code>feed_forward.w2</code>，其余部分用<code>Q3_K</code>。</li><li>LLM-Q4_K_S：使用<code>Q4_K</code>量化所有张量。</li><li>LLM-Q4_K_M：使用<code>Q6_K</code>量化<code>attention.wv</code>和<code>feed_forward.w2</code>一半的张量，其余部分用<code>Q4_K</code>。</li><li>LLM-Q5_K_S：用<code>Q5_K</code>量化所有张量。</li><li>LLM-Q5_K_M：使用<code>Q6_K</code>量化<code>attention.wv</code>和<code>feed_forward.w2</code>一半的张量，其余部分用<code>Q5_K</code>。</li><li>LLM-Q6_K：使用6bit的<code>Q8_K</code>量化所有权重。</li></ul></li></ul></li><li>IQ系列，带重要性矩阵的量化<a href="https://github.com/ggerganov/llama.cpp/pull/4773">SOTA 2-bit quants by ikawrakow · Pull Request #4773 · ggerganov&#x2F;llama.cpp · GitHub</a></li></ul></li><li></li></ul><h1 id="四、配置调试"><a href="#四、配置调试" class="headerlink" title="四、配置调试"></a>四、配置调试</h1><p>配置期间可能需要启动多个终端以同时开展多个工作，这里记录下如何在一个容器内启动多个终端的方法。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> docker <span class="hljs-built_in">exec</span> -it [CONTAINER] bash<br></code></pre></td></tr></table></figure>]]></content>
     
     
     
@@ -85,9 +85,9 @@
       
       <tag>折腾</tag>
       
-      <tag>编译</tag>
-      
       <tag>DSE</tag>
+      
+      <tag>编译</tag>
       
     </tags>
     
@@ -131,9 +131,9 @@
       
       <tag>折腾</tag>
       
-      <tag>pytorch</tag>
-      
       <tag>编译</tag>
+      
+      <tag>pytorch</tag>
       
     </tags>
     
@@ -255,9 +255,9 @@
     
     <tags>
       
-      <tag>工具</tag>
-      
       <tag>折腾</tag>
+      
+      <tag>工具</tag>
       
     </tags>
     
