@@ -1,0 +1,709 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="peach-water">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="前言 检查宿主机是否支持perf指令，如果不能，则有关调试加速rr-debug的部分无法使用。安装教程参考CNBLOG。 如果是Docker容器启动，在启动镜像前最好设置--cap-add SYS_ADMIN，从而可以正常使用rr-debug。不建议使用较老的系统，还要自行折腾gcc的升级。另外SYS_ADMIN可能不符合最小权限原则，自行考量。 如果是虚拟机，可尝试在虚拟机内部安装并使用perf">
+<meta property="og:type" content="article">
+<meta property="og:title" content="学习-VTR开源软件开发环境安装">
+<meta property="og:url" content="http://example.com/2025/06/12/%E5%AD%A6%E4%B9%A0-VTR%E5%BC%80%E6%BA%90%E8%BD%AF%E4%BB%B6%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="前言 检查宿主机是否支持perf指令，如果不能，则有关调试加速rr-debug的部分无法使用。安装教程参考CNBLOG。 如果是Docker容器启动，在启动镜像前最好设置--cap-add SYS_ADMIN，从而可以正常使用rr-debug。不建议使用较老的系统，还要自行折腾gcc的升级。另外SYS_ADMIN可能不符合最小权限原则，自行考量。 如果是虚拟机，可尝试在虚拟机内部安装并使用perf">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85/MarsCode.png">
+<meta property="og:image" content="http://example.com/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85/debug-vpr.png">
+<meta property="article:published_time" content="2025-06-12T03:41:11.000Z">
+<meta property="article:modified_time" content="2025-06-12T07:14:58.745Z">
+<meta property="article:author" content="peach-water">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="VTR">
+<meta property="article:tag" content="部署安装">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85/MarsCode.png">
+  
+  
+  
+  <title>学习-VTR开源软件开发环境安装 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="学习-VTR开源软件开发环境安装"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-06-12 11:41" pubdate>
+          June 12, 2025 am
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.7k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          15 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">学习-VTR开源软件开发环境安装</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><ul>
+<li>检查宿主机是否支持<code>perf</code>指令，如果不能，则有关调试加速<code>rr-debug</code>的部分无法使用。安装教程参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/z1026544682/article/details/115329534">CNBLOG</a>。<ul>
+<li>如果是Docker容器启动，在启动镜像前最好设置<code>--cap-add SYS_ADMIN</code>，从而可以正常使用<code>rr-debug</code>。不建议使用较老的系统，还要自行折腾gcc的升级。另外<code>SYS_ADMIN</code>可能不符合最小权限原则，自行考量。</li>
+<li>如果是虚拟机，可尝试在虚拟机内部安装并使用perf工具。检查是否正常工作，运行<code>perf --help</code>是否正常显示所有帮助信息。</li>
+</ul>
+</li>
+<li>检查环境中<code>gcc</code>的版本，运行<code>gcc -version</code>返回的版本号需要<code>&gt;=10</code>。如果是<code>clang</code>则需要<code>&gt;=11</code>。</li>
+<li>全程最好有github访问支持，以防止网络问题导致编译失败。</li>
+</ul>
+<blockquote>
+<p>本教程以VTR其中一个子模块VPR为目标。记录VPR二次开发的环境搭建过程。</p>
+</blockquote>
+<h1 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h1><h2 id="docker启动"><a href="#docker启动" class="headerlink" title="docker启动"></a>docker启动</h2><blockquote>
+<p>如果是虚拟机可以跳过这个小章节。<br>我们以ubuntu:22.04基础镜像为例：</p>
+</blockquote>
+<ul>
+<li><code>--cap-add SYS_ADMIN</code>允许docker容器使用<code>perf</code>指令，这对于之后<code>rr-debug</code>安装重要。<ul>
+<li>再次提醒：检查宿主机是否支持使用perf指令，否则docker内部仍然无法使用。之后rr-debug也无法使用，这条指令毫无意义。<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">docker run --cap-add SYS_ADMIN -itd -p 8022:22 --name=<span class="hljs-string">&quot;VPR&quot;</span> ubuntu:22.04 /bin/bash<br>docker <span class="hljs-built_in">exec</span> -it VPR /bin/bash<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<h2 id="环境安装"><a href="#环境安装" class="headerlink" title="环境安装"></a>环境安装</h2><p>需要安装基础编译环境：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs bash">apt update<br><span class="hljs-comment"># cmake可能需要安装</span><br>apt install -y cmake <br><span class="hljs-comment"># 工具链编译环境</span><br>apt install -y bison flex zlib1g zlib1g-dev tcl8.6-dev libreadline-dev libffi-dev libtbb-dev pkg-config<br><span class="hljs-comment"># 其他工具</span><br>apt install -y ccache git wget curl <br><span class="hljs-comment"># 如果系统存在的gcc编译器满足前面提到的要求，这条命令可忽略</span><br>apt install -y gcc-11 g++-11 <br><span class="hljs-comment"># 以下这条指令与rr-debug相关，自行决定是否安装。需要在实体机上执行</span><br>apt-get install linux-tools-common linux-tools-$(<span class="hljs-built_in">uname</span> -r) <span class="hljs-comment"># rr 调试器需要使用到 perf 工具</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="拉取并编译项目代码"><a href="#拉取并编译项目代码" class="headerlink" title="拉取并编译项目代码"></a>拉取并编译项目代码</h2><blockquote>
+<p>作者演示的代码仅包含VTR模块中的VPR软件子集。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">git <span class="hljs-built_in">clone</span> https://github.com/verilog-to-routing/vtr-verilog-to-routing.git<br><span class="hljs-built_in">cd</span> VLSI-FPGA<br><span class="hljs-built_in">mkdir</span> build<br>sh make.sh<br></code></pre></td></tr></table></figure>
+<blockquote>
+<p>编译期间需要访问github获得资源，需要保证网络通畅。</p>
+</blockquote>
+<p>如果看到以下运行结果说明编译成功：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs bash">[ 98%] Building CXX object vpr/CMakeFiles/libvpr.dir/src/timing/read_sdc.cpp.o<br>[100%] Building CXX object vpr/CMakeFiles/libvpr.dir/src/timing/slack_evaluation.cpp.o<br>[100%] Building CXX object vpr/CMakeFiles/libvpr.dir/src/timing/timing_fail_error.cpp.o<br>[100%] Building CXX object vpr/CMakeFiles/libvpr.dir/src/timing/timing_util.cpp.o<br>[100%] Building CXX object vpr/CMakeFiles/libvpr.dir/src/util/hash.cpp.o<br>[100%] Building CXX object vpr/CMakeFiles/libvpr.dir/src/timing/timing_graph_builder.cpp.o<br>[100%] Building CXX object vpr/CMakeFiles/libvpr.dir/src/util/vpr_utils.cpp.o<br>[100%] Linking CXX static library libvpr.a<br>[100%] Built target libvpr<br>[100%] Building CXX object vpr/CMakeFiles/vpr.dir/src/main.cpp.o<br>[100%] Linking CXX executable vpr<br>lto-wrapper: warning: using serial compilation of 13 LTRANS <span class="hljs-built_in">jobs</span><br>[100%] Built target vpr<br>(VPR) root@0be0dbd108b5:~/VLSI-FPGA#<br></code></pre></td></tr></table></figure>
+
+<p>运行以下代码以检查VPR模块是否正确编译：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">./build/vpr/vpr <span class="hljs-built_in">arch</span>/stratix10_arch.timing.xml benchmark/flattened_timer.blif<br></code></pre></td></tr></table></figure>
+
+<p>观察到以下结果说明程序没有问题：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs bash">Incr Slack updates 1 <span class="hljs-keyword">in</span> 0.000465027 sec<br>Full Max Req/Worst Slack updates 1 <span class="hljs-keyword">in</span> 0.000197811 sec<br>Incr Max Req/Worst Slack updates 0 <span class="hljs-keyword">in</span> 0 sec<br>Incr Criticality updates 0 <span class="hljs-keyword">in</span> 0 sec<br>Full Criticality updates 1 <span class="hljs-keyword">in</span> 0.00104656 sec<br>Flow timing analysis took 3.20806 seconds (2.6542 STA, 0.553867 slack) (201 full updates: 26 setup, 0 hold, 175 combined).<br>VPR succeeded<br>The entire flow of VPR took 62.63 seconds (max_rss 362.6 MiB)<br>(base) root@96dd2831fa21:/vpr_master/test# <br></code></pre></td></tr></table></figure>
+
+<p>同时会在当前目录下生成大约11个文件，代表当前代码应用到具体芯片上的设计结果，其中：</p>
+<ul>
+<li>.net文件是多种元件打包的结果，文件细节可以学习这个说明文档<a target="_blank" rel="noopener" href="https://docs.verilogtorouting.org/en/latest/vpr/file_formats/#packed-netlist-format-net">VTR&#x2F;.net</a>。</li>
+<li>.place文件则是布局结果，具体细节可以看这个文档说明<a target="_blank" rel="noopener" href="https://docs.verilogtorouting.org/en/latest/vpr/file_formats/#placement-file-format-place">VTR&#x2F;.place</a>。</li>
+<li>.route文件则是布线结果，具体细节可以看这个文档说明<a target="_blank" rel="noopener" href="https://docs.verilogtorouting.org/en/latest/vpr/file_formats/#routing-file-format-route">VTR&#x2F;.route</a>。<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs bash">(base) root@96dd2831fa21:/vpr_master/test# tree<br>.<br>|-- flattened_timer.net<br>|-- flattened_timer.net.post_routing<br>|-- flattened_timer.place<br>|-- flattened_timer.route<br>|-- packing_pin_util.rpt<br>|-- pre_pack.report_timing.setup.rpt<br>|-- report_timing.hold.rpt<br>|-- report_timing.setup.rpt<br>|-- report_unconstrained_timing.hold.rpt<br>|-- report_unconstrained_timing.setup.rpt<br>|-- vpr_stdout.log<br></code></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="开发环境"><a href="#开发环境" class="headerlink" title="开发环境"></a>开发环境</h2><blockquote>
+<p>注意，整个项目源文件非常大，导致GDB加载符号表的时间很长（大约1分钟时间才能进入调试，在自己机器上可能会更久）。<br>因此一定要养成良好的编程习惯，不要写一点函数就执行整个项目的调试，利用自行编写的单元测试函数实现函数正确性的验证。</p>
+</blockquote>
+<h3 id="Vscode配置"><a href="#Vscode配置" class="headerlink" title="Vscode配置"></a>Vscode配置</h3><p>本教程基于vscode搭建调试环境，同学们可以自行尝试用Visual stdio或CLion等常规IDE，或者Trae这种AI高度融合的IDE。</p>
+<blockquote>
+<p>推荐同学们安装一个Ai加持的IDE。在VScode中，推荐安装一个marscode插件，然后按照插件教程部署写代码的Ai。<br><img src="/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85/MarsCode.png" srcset="/img/loading.gif" lazyload alt="Mars Code"></p>
+</blockquote>
+<p>在Vscode中使用F5的Debug功能，我们需要创建两个配置文件告诉Vscode如何执行项目的Debug工作。</p>
+<ol>
+<li>创建一个文件夹<code>.vscode</code>和两个文件<code>launch.json</code>和<code>task.json</code>。</li>
+<li><code>launch.json</code>填写以下内容：</li>
+</ol>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-comment">// Use IntelliSense to learn about possible attributes.</span><br>    <span class="hljs-comment">// Hover to view descriptions of existing attributes.</span><br>    <span class="hljs-comment">// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span><br>    <span class="hljs-attr">&quot;version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;0.2.0&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;configurations&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;g++ - Build and debug active file&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;cppdbg&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;request&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;launch&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;program&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;$&#123;cwd&#125;/build/vpr/vpr&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;args&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                <span class="hljs-string">&quot;$&#123;cwd&#125;/arch/stratix10_arch.timing.xml&quot;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-string">&quot;$&#123;cwd&#125;/benchmark/flattened_pulse_width_led.blif&quot;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-string">&quot;-j&quot;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-string">&quot;8&quot;</span><br>            <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;stopAtEntry&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;cwd&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;$&#123;fileDirname&#125;&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;environment&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;externalConsole&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;MIMode&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;gdb&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;setupCommands&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                <span class="hljs-punctuation">&#123;</span><br>                    <span class="hljs-attr">&quot;description&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Enable pretty-printing for gdb&quot;</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-attr">&quot;text&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;-enable-pretty-printing&quot;</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-attr">&quot;ignoreFailures&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><br>                <span class="hljs-punctuation">&#125;</span><br>            <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;preLaunchTask&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;build&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;miDebuggerPath&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/usr/bin/gdb&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<ol start="3">
+<li><code>tasks.json</code>填写以下内容</li>
+</ol>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2.0.0&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;tasks&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;label&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;cmake&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;shell&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;command&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;cmake&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;args&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                <span class="hljs-string">&quot;../&quot;</span><br>            <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;options&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;cwd&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;$&#123;cwd&#125;/build&quot;</span><br>            <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;label&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;make&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;shell&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;command&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;make&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;args&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                <span class="hljs-string">&quot;-j&quot;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-string">&quot;24&quot;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-string">&quot;CMAKE_PARAMS=\&quot;-DVTR_IPO_BUILD=off\&quot;&quot;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-string">&quot;vpr&quot;</span><br>            <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;options&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;cwd&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;$&#123;cwd&#125;/build&quot;</span><br>            <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;dependsOn&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;cmake&quot;</span><span class="hljs-punctuation">]</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;label&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;build&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;dependsOn&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;cmake&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;make&quot;</span><span class="hljs-punctuation">]</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<p>这个时候，回到主页，在这个位置打一个断点。然后按<code>F5</code>或者点击菜单<code>Run</code>下面的<code>Starting Debugging</code>。<br><img src="/2024/11/12/%E5%AD%A6%E4%B9%A0-C-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98/%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85/debug-vpr.png" srcset="/img/loading.gif" lazyload alt="alt text"><br>经过一番漫长的等待后，成功进入到熟悉的Vscode调试状态，Vscode停在了指定的位置。</p>
+<h3 id="调试提速"><a href="#调试提速" class="headerlink" title="调试提速"></a>调试提速</h3><p>整个debug启动的过程十分漫长（作者在自己机器上启动要50s），十分浪费同学们的精力和耐心。</p>
+<p>这主要是因为整个项目代码非常多，编译得到最后的vpr程序体积达到200MB，巨量的符号加载严重拖慢了整个gdb的调试进程。</p>
+<blockquote>
+<p>VTR官方文档有提到建议安装RR-debuger用于二次开发。</p>
+</blockquote>
+<p>⚠到这里就没有继续尝试，因为本人也一时半伙没有解决好RR-debug的安装。</p>
+<ul>
+<li>另一种方法是使用<code>gdb-add-index</code>来提前构造符号表。似乎没有用，加载时间还是一如既往的慢。</li>
+</ul>
+<h1 id="错误修复"><a href="#错误修复" class="headerlink" title="错误修复"></a>错误修复</h1><h2 id="std-range相关"><a href="#std-range相关" class="headerlink" title="std::range相关"></a><code>std::range</code>相关</h2><p>VTR的源代码使用<code>std::ranges</code>，这是<code>c++20</code>标准引入的新内容，因此至少需要保证<code>gcc&gt;=10</code>的环境。</p>
+<p>解决方法：</p>
+<ul>
+<li>尝试更新系统的编译器（不推荐）。</li>
+<li>自行编译安装gcc和g++新版本，然后更新CmakeList.txt中关于编译器设置的部分。</li>
+<li>换系统。不管是虚拟机还是Docker，这个方案都最省事也最快。</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%AD%A6%E4%B9%A0/" class="print-no-link">#学习</a>
+      
+        <a href="/tags/VTR/" class="print-no-link">#VTR</a>
+      
+        <a href="/tags/%E9%83%A8%E7%BD%B2%E5%AE%89%E8%A3%85/" class="print-no-link">#部署安装</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>学习-VTR开源软件开发环境安装</div>
+      <div>http://example.com/2025/06/12/学习-VTR开源软件开发环境安装/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>peach-water</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>June 12, 2025</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/25/%E6%90%9E%E7%AC%91-%E7%89%9B%E9%A9%AC%E8%A1%A8/" title="[搞笑]-牛马表">
+                        <span class="hidden-mobile">[搞笑]-牛马表</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
